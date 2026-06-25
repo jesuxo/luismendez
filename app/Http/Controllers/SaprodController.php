@@ -1057,7 +1057,7 @@ class SaprodController extends Controller
         return response()->json(['success'=>'success']);
     }
 
-    public function existenciasCelulares()
+    public function existenciascauchos()
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
         $arraysucursales = implode(",",$arraysucursales);
@@ -1133,11 +1133,11 @@ class SaprodController extends Controller
         }
 
 
-        return view('existenciasCelulares',
+        return view('existenciascauchos',
             compact(  'arraysucursal', 'arrayinstanci', 'arraycantidad') );
     }
 
-    public function existenciasCelularesModelos(Request $request)
+    public function existenciascauchosModelos(Request $request)
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
         $arraysucursales = implode(",",$arraysucursales);
@@ -1215,12 +1215,12 @@ class SaprodController extends Controller
 
         asort($arrayinstanci);
         $ajax = ($request->ajax())? 1 : 0;
-        $html = view('existenciasCelularesModelos', compact('ajax', 'inspadre', 'arraysucursal',  'arrayinstanci', 'arraycantidad') )->render();
+        $html = view('existenciascauchosModelos', compact('ajax', 'inspadre', 'arraysucursal',  'arrayinstanci', 'arraycantidad') )->render();
 
         if ($ajax){
             return $html;
         }else{
-            return  view('existenciasCelularesModelosPrint',compact('html'));
+            return  view('existenciascauchosModelosPrint',compact('html'));
         }
     }
 

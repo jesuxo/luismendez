@@ -515,7 +515,7 @@
 
             $.ajax({
                 type: 'POST',
-                url: '/existencia/celulares/modelos',
+                url: '/existencia/cauchos/modelos',
                 data:{inspadre:inspadre},
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

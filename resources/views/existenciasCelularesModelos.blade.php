@@ -25,7 +25,7 @@
                     @if($ajax == 0)
                         <script>window.print()</script>
                     @else
-                         <a target="_blank" href="/existencia/celulares/modelos/{{$inspadre}}"><i class="bi bi-printer" style="margin-right: 5px"></i> Imprimir</a>
+                         <a target="_blank" href="/existencia/cauchos/modelos/{{$inspadre}}"><i class="bi bi-printer" style="margin-right: 5px"></i> Imprimir</a>
                     @endif
                 </div>
                 <div class="card-body" data-simplebar  >

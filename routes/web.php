@@ -179,9 +179,9 @@ Route::middleware(['auth'])->group(function () {
         Route::match(['get','post'],'ventas/resultado', 'resultadosucursales');
         Route::post('saprod/viewprodinstsanciascodalte', 'viewprodinstsanciascodalte');
         Route::match(['get','post'],'/operaciones/{codprod?}', 'index');
-        Route::get( '/existencia/cauchos', 'existenciasCelulares');
-        Route::post( '/existencia/cauchos/modelos', 'existenciasCelularesModelos');
-        Route::get( '/existencia/cauchos/modelos/{inspadre}', 'existenciasCelularesModelos');
+        Route::get( '/existencia/cauchos', 'existenciascauchos');
+        Route::post( '/existencia/cauchos/modelos', 'existenciascauchosModelos');
+        Route::get( '/existencia/cauchos/modelos/{inspadre}', 'existenciascauchosModelos');
     });
 
     Route::resource('depositos', \App\Http\Controllers\SadepoController::class);
