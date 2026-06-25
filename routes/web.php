@@ -132,7 +132,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('instancias', \App\Http\Controllers\SainstaController::class);
     Route::controller(\App\Http\Controllers\SainstaController::class)->group(function () {
-        Route::get('sainsta/json', 'json');
+        Route::get('sainsta/json', 'json')->name('sainsta.json');
         Route::post('sainsta/check/lastprod/{codinst}', 'lastprod');
     });
 
