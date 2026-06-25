@@ -30,7 +30,7 @@ class SaprodExport implements FromCollection, WithHeadings
     {
         $comercial  = session('comercialid') ;
         return Saprod::selectRaw("codprod,descrip,descrip2,descrip3,descrip4,costod as precio1, costod2 as precio2, costod3 as precio3, preciod as costo,
-        refere as referencia, marca, newexisten as existencia   ")->where("comercial",$comercial)->orderBy('marca')->get();
+        refere as referencia, marca, existen as existencia   ")->where("comercial",$comercial)->orderBy('marca')->get();
 
     }
 }
