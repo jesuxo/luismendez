@@ -189,6 +189,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('sadepo/json', 'json');
     });
 
+    Route::get('/productos/plantilla', [SaprodController::class, 'descargarPlantilla'])->name('productos.plantilla');
+    Route::post('/productos/importarcrear', [SaprodController::class, 'importarcrear'])->name('productos.importarcrear');
+    Route::post('saprod/update', [SaprodController::class, 'updateSaprodData']);
+    Route::get('saprod/export/{codalte}', [SaprodController::class, 'saprodexport']);
+    Route::post('/productos/validar-codigo', [SaprodController::class, 'validarCodigo'])->name('productos.validar-codigo');
+
+
     Route::match(['get','post'],'/reporte/inventarios',     [App\Http\Controllers\SaprodController::class, 'inventarios'])->name('inventarios');
 
     Route::match(['get','post'],'/reporte/instpagobs',      [App\Http\Controllers\SatarjController::class, 'instpagobs'])->name('instpagobs');
