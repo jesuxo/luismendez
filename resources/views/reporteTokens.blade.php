@@ -1,319 +1,420 @@
 @extends('layouts.master')
-@section('title')
-    REPORTE DE TRANSFERENCIAS
-@endsection
+@section('title', 'Gestión de Tokens')
 @section('css')
     <style>
-        .table-nowrap th, .table-nowrap td {
-            white-space: unset !important;
-        }
-        .botoncal{
-            background: transparent;
-            border: none;
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
             color: white;
+            transition: transform 0.2s;
         }
-        .botoncal:hover{
-            font-size: 13px;
+        .stats-card:hover {
+            transform: translateY(-5px);
         }
-
-        .btn-soft-light:hover, .codclieseleted{
-            background-color: #e0f2ff !important;
+        .stats-number {
+            font-size: 28px;
+            font-weight: bold;
         }
-        .nav-pills .nav-link {
-            background: #eee !important;
-            border-bottom-right-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
         }
-        .nav-pills .nav-link.active  {
-            background: #0072c5 !important;
-            border-bottom-right-radius: 0 !important;
-            border-bottom-left-radius: 0 !important;
+        .token-code {
+            font-family: monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
         }
-        .nav-pills{
-            border-bottom: 1px solid #0072c5;
+        .btn-copiar {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-copiar:hover {
+            background-color: #e9ecef;
+        }
+        .token-row {
+            transition: all 0.2s;
+        }
+        .token-row:hover {
+            background-color: #f8f9fa;
+        }
+        .bstrong b{
+            color: #0072c5 !important;
         }
     </style>
 @endsection
+
 @section('content')
-    <style>
-        .tdline{
-            border:1px solid #0072c5 !important;
-
-        }
-        .tdlineff{
-            border-left:1px solid #fff !important;
-
-            color: white !important;
-            background-color: #0072c5 !important;
-        }
-    </style>
     <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">
+                                <i class="bi bi-key me-2"></i>Gestión de Tokens
+                            </h4>
+                            <p class="text-white-50 mb-0 small">Creación y seguimiento de tokens de autorización temporal</p>
+                        </div>
+                        <div class="d-none">
+                            <button class="btn btn-light" onclick="exportarTokens()">
+                                <i class="bi bi-file-excel me-1"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
 
 
-        <div class="row ">
-            <div class="col-lg-2">
-                <div class="row">
-                    <div class="col-md-12 mb-4">
-                        <form  method="post" name="form1" id="form1" action="{{route('reportetokens')}}">
-
-                            <input placeholder="Buscar: TOKEN ..." class="form-control"
-                                   type="text" style="margin-bottom: 20px; height: 40px; width: 99%; "
-                                   value="{{(isset($busquedatoken) and $busquedatoken !='')? $busquedatoken : ''}}"
-                                   onchange="$('#form1').submit()"
-                                   name="busquedatoken" id="busquedatoken">
-
-                            <div class="input-group mb-4" >
-                                <div class="input-group-text bg-primary border-primary text-white" style="width: 100%">
-                                    <button type="submit" class="botoncal" style="margin: auto" >Consultar</button>
-                                </div>
-                            </div>
+                    <!-- Filtros -->
+                    <div class="filter-section">
+                        <form method="POST" action="{{ route('reportetokens') }}" class="row g-3" id="form1" name="form1">
                             @csrf
-                            @method('POST')
+                            <div class="col-md-4">
+
+                                <input type="text" name="busquedatoken" class="form-control"
+                                       placeholder="Buscar Token, usuario, observación..." onchange="$('#form1').submit()"
+                                       value="{{ $busquedatoken ?? '' }}">
+                            </div>
+                            <div class="col-md-3">
+
+                                <select name="fksucursal" class="form-select" onchange="$('#form1').submit()">
+                                    <option value="">Todas las sucursales</option>
+                                    @foreach($sucursales as $suc)
+                                        <option value="{{ $suc->id }}" {{ ($fksucursal ?? '') == $suc->id ? 'selected' : '' }}>
+                                            {{ $suc->descrip }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+
+                                <select name="estado" class="form-select">
+                                    <option value="todos" {{ ($estado ?? 'todos') == 'todos' ? 'selected' : '' }}>Todos</option>
+                                    <option value="pendientes" {{ ($estado ?? '') == 'pendientes' ? 'selected' : '' }}>Pendientes</option>
+                                    <option value="usados" {{ ($estado ?? '') == 'usados' ? 'selected' : '' }}>Usados</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search me-1"></i> Filtrar
+                                </button>
+                            </div>
                         </form>
-
                     </div>
 
-
-                </div>
-            </div>
-            <div class="col-lg-10 ">
-                <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
-                    <ul class="nav nav-pills flex-grow-1 mb-0" role="tablist">
-
-                        <li class="nav-item ">
-                            <a class="nav-link active" onclick="tabchangeto('1')"  href="javascript:;" role="tab" id="tab1">
-                                PENDIENTES ({{count($pendientes)}})
-                            </a>
-                        </li>
-                        <li class="nav-item ">
-                            <a class="nav-link" onclick="tabchangeto('2')"  href="javascript:;" role="tab" id="tab2">
-                                USADOS ({{count($usados)}})
-                            </a>
-                        </li>
-
-                    </ul>
-
-                </div>
-                <div class="tab-content">
-                    <div class="tab-pane active" id="tabcontent1" role="tabpanel">
-                        <div class="card"  >
-                            <div class="card-header align-items-center d-flex">
-                                <h4 class="card-title mb-0 flex-grow-1">TOKENS PENDIENTES</h4>
-                            </div>
-                            <div class="card-body" >
-                                <div class="table-responsive table-card">
-                                    <table width="100%" class="table table-nowrap align-middle">
-                                        <tr>
-                                            <td width="10%" class="p-2 text-center tdlineff">Fecha</td>
-                                            <td width="10%" class="p-2 text-center tdlineff">Token</td>
-                                            <td width="50%" class="p-2 text-center tdlineff">Observaci&oacute;n/Comentario</td>
-                                            <td width="50%" class="p-2 text-center tdlineff">Sucursal</td>
-                                            <td width="1%" class="p-2 text-center tdlineff"> </td>
-                                        </tr>
-
-                                        @if(isset($pendientes))
-                                            @foreach($pendientes as $index => $token)
-
-                                                <tr>
-                                                    <td class="p-2 text-start tdline" style="font-size: 10px; !important;"valign="top">{{$token->fechaformat}}</td>
-                                                    <td class="p-2 text-start tdline" style="font-size: 10px; !important;" valign="top">
-                                                        @if($token->token !='')
-                                                            {{$token->token}}
-                                                        @else
-                                                            <a onclick="$('#tokenid').val({{$token->id}});"
-                                                               data-bs-toggle="modal" href="#updatetoken">  Editar</a>
-                                                        @endif
-                                                    </td>
-                                                    <td class="p-2 text-start tdline" style="font-size: 10px; !important;" valign="top">{{$token->obs}}</td>
-                                                    <td class="p-2 text-start tdline" style="font-size: 10px; !important;" valign="top">{{$token->sucursal->descrip}}</td>
-
-                                                    <td class="p-2 text-end   tdline" valign="top" >
-                                                        <div class="dropdown">
-                                                            <button class="btn btn-soft-primary btn-sm dropdown btn-icon" type="button"
-                                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                                <i class="ri-more-fill align-middle"></i>
-                                                            </button>
-                                                            <ul class="dropdown-menu dropdown-menu-end" >
-                                                                <li>
-                                                                    <a  onclick="$('#deleterecord').data('id',{{$token->id}})" class="dropdown-item remove-item-btn"
-                                                                        data-bs-toggle="modal" href="#deleteOrder">
-                                                                        <i class="ri-delete-bin-fill align-bottom me-2 text-muted"></i>
-                                                                        Eliminar
-                                                                    </a>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
+                    <!-- Tabla de tokens -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                            <th width="5%">ID</th>
+                            <th width="20%">Token</th>
+                            <th width="10%">Estado</th>
+                            <th width="10%">Usuario</th>
+                            <th width="15%">Sucursal</th>
+                            <th width="25%">Observación</th>
+                            <th width="10%">Creado</th>
+                            <th width="5%">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @forelse($tokens as $token)
+                                <tr class="token-row">
+                                    <td class="fw-bold">#{{ $token->id }}</td>
+                                    <td>
+                                        @if($token->token)
+                                            <div class="d-flex align-items-center gap-2">
+                                                <span class="token-code">{{ $token->token }}</span>
+                                                <button class="btn btn-sm btn-outline-secondary btn-copiar"
+                                                        onclick="copiarToken('{{ $token->token }}')"
+                                                        title="Copiar token">
+                                                    <i class="mdi mdi-content-copy"></i>
+                                                </button>
+                                            </div>
+                                        @else
+                                            <span class="text-muted">Pendiente</span>
+                                            <button class="btn btn-sm btn-outline-primary ms-2"
+                                                    onclick="editarToken({{ $token->id }}, '{{ addslashes($token->obs) }}')">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
                                         @endif
-
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="tab-pane " id="tabcontent2" role="tabpanel">
-                        <div class="card"  >
-                            <div class="card-header align-items-center d-flex">
-                                <h4 class="card-title mb-0 flex-grow-1">TOKENS USADOS</h4>
-
-                            </div>
-                            <div class="card-body" >
-                                <div class="table-responsive table-card">
-                                    <table width="100%" class="table table-nowrap align-middle">
-
-                                        <tr>
-                                            <td width="10%" class="p-2 text-center tdlineff">Fecha</td>
-                                            <td width="5%" class="p-2 text-center tdlineff">Token</td>
-                                            <td width="30%" class="p-2 text-start  tdlineff">Usuario</td>
-                                            <td width="30%" class="p-2 text-start  tdlineff">Observaci&oacute;n/Comentario</td>
-                                        </tr>
-
-                                        @if(isset($usados))
-                                            @foreach($usados as $index => $token)
-                                                <tr>
-                                                    <td class="p-2 text-start tdline" style="font-size: 10px; !important;"valign="top">{{$token->fechaformat}}</td>
-                                                    <td class="p-2 text-start tdline" valign="top" style="font-size: 10px; !important;">{{$token->token}}</td>
-                                                    <td class="p-2 text-start tdline" valign="top" style="font-size: 10px; !important;">{{$token->codusua}}  </td>
-                                                    <td class="p-2 text-start tdline" valign="top" style="font-size: 10px; !important;">{{$token->obs}}  </td>
-                                                </tr>
-                                            @endforeach
+                                    </td>
+                                    <td>
+                                            <span class="badge bg-{{ $token->status_class }}">
+                                                {{ $token->status_text }}
+                                            </span>
+                                        @if($token->status == 0 && $token->tiempo_restante != 'Usado')
+                                            <br>
+                                            <small class="text-muted">{{ $token->tiempo_restante }}</small>
                                         @endif
+                                    </td>
+                                    <td>
+                                        @if($token->codusua)
 
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                                            {{ $token->codusua }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($token->sucursal)
+
+                                            {{ str_replace("SARA","",$token->sucursal->descrip) }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <small class="text-muted bstrong">{!!   $token->obs  !!}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ $token->fechaformat }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-soft-primary" data-bs-toggle="dropdown">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                @if($token->token)
+                                                    <li>
+                                                        <a class="dropdown-item" href="javascript:;" onclick="copiarToken('{{ $token->token }}')">
+                                                            <i class="bi bi-copy me-1"></i> Copiar
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if($token->status == 0)
+                                                    <li>
+                                                        <a class="dropdown-item" href="javascript:;" onclick="editarToken({{ $token->id }}, '{{ addslashes($token->obs) }}')">
+                                                            <i class="bi bi-pencil me-1"></i> Editar
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                                @if(auth()->user()->can('menu_token_eliminar'))
+                                                    <li>
+                                                        <a class="dropdown-item text-danger" href="javascript:;" onclick="eliminarToken({{ $token->id }})">
+                                                            <i class="bi bi-trash me-1"></i> Eliminar
+                                                        </a>
+                                                    </li>
+                                                @endif
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                                        <p class="mt-2 mb-0">No hay tokens registrados</p>
+                                        <button class="btn btn-primary btn-sm mt-3 d-none" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+                                            <i class="bi bi-plus-circle me-1"></i> Crear primer token
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforelse
+                            </tbody>
+                        </table>
                     </div>
-                </div>
-            </div>
 
-        </div>
-
-    </div>
-
-    <div class="modal fade flip" id="deleteOrder" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-body p-5 text-center">
-                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop"
-                               colors="primary:#405189,secondary:#f06548" style="width:90px;height:90px">
-                    </lord-icon>
-                    <div class="mt-4 text-center">
-                        <h4>Desea eliminar este token?</h4>
-                        <p class="text-muted fs-15 mb-4">
-                            Borrando este registro ud eliminar&aacute; la informaci&oacute;n de la base de datos </p>
-                        <div class="hstack gap-2 justify-content-center remove">
-                            <button class="btn btn-link link-success fw-medium text-decoration-none"
-                                    id="deleteRecord-close" data-bs-dismiss="modal"><i
-                                    class="ri-close-line me-1 align-middle"></i> Cancelar</button>
-                            @if( auth()->user()->can('menu_token_eliminar') )
-                                <button class="btn btn-danger" id="deleterecord" data-id="">Si, Eliminar</button>
-                            @endif
-                        </div>
+                    <!-- Paginación -->
+                    <div class="mt-3">
+                        {{ $tokens->links() }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade flip" id="updatetoken" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- Modal crear token -->
+    <div class="modal fade" id="createTokenModal" tabindex="-1">
+        <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-body p-5 text-center">
-                    <lord-icon src="https://cdn.lordicon.com/gsqxdxog.json" trigger="loop"
-                               colors="primary:#405189,secondary:#f06548" style="width:90px;height:90px">
-                    </lord-icon>
-                    <div class="mt-4 text-center">
-                        <form name="form22" id="form22" method="POST" action="/token/update">
-                            @csrf @method('POST')
-                            <input type="hidden" name="tokenid" value="" id="tokenid"/>
-                            <h4>Editar Token</h4>
-                            <p class="text-muted fs-15 mb-4">
-                                Puede escribir cualquier cadena de texto incluyendo numeros, no debe contener espacios ni simbolos especiales
-                            </p>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-plus-circle me-2"></i>Crear Nuevo Token
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ route('tokens.store') }}">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Token</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" onclick="$('#btncopy').html('Copiar Token');" name="token" id="tokenval"   value=""   >
-                                <div class="input-group-text bg-primary border-primary text-white">
-                                    <button type="submit" class="botoncal" >Guardar</button>
-                                </div>
+                                <input type="text" name="token" class="form-control"
+                                       placeholder="Ej: AUTORIZACION-123" required>
+                                <button type="button" class="btn btn-outline-secondary" onclick="generarTokenAleatorioModal()">
+                                    <i class="bi bi-shuffle"></i> Generar
+                                </button>
                             </div>
-                            <button onclick="copyText('tokenval')" type="button"
-                                    class="btn btn-primary mt-3 text-white"  style="width: 100%" id="btncopy">Copiar Token</button>
-                        </form>
+                            <small class="text-muted">Solo letras mayúsculas, números, guiones y guiones bajos</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Sucursal</label>
+                            <select name="fksucursal" class="form-select" required>
+                                <option value="">Seleccione una sucursal...</option>
+                                @foreach($sucursales as $suc)
+                                    <option value="{{ $suc->id }}">{{ $suc->descrip }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Observación / Motivo</label>
+                            <textarea name="obs" class="form-control" rows="3"
+                                      placeholder="Ej: Autorización para traslado de mercancía..."></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Los tokens tienen validez de <strong>7 días</strong> desde su creación.
+                        </div>
                     </div>
-                </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Crear Token</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-
+    <!-- Modal editar token -->
+    <div class="modal fade" id="editTokenModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Editar Token
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ route('token.update') }}">
+                    @csrf
+                    <input type="hidden" name="tokenid" id="edit_token_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Token</label>
+                            <input type="text" name="token" id="edit_token_value" class="form-control" required>
+                            <small class="text-muted">Solo letras mayúsculas, números, guiones y guiones bajos</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Observación</label>
+                            <textarea name="obs" id="edit_token_obs" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-1"></i>
+                            El token mantendrá su fecha de creación original.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-warning">Actualizar Token</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
+
 @section('scripts')
-
-    <script src="{{ URL::asset('build/js/app.js?'.rand(0,5555555)) }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ URL::asset('build/js/app.js') }}"></script>
     <script>
-
-
-
-        function copyText(copyInput) {
-            const input = document.getElementById(copyInput);
-
-            input.select();
-            input.setSelectionRange(0, 99999);
-
-            try {
-                const copied = document.execCommand('copy');
-                if (copied) {
-                    $("#btncopy").html('Token Copiado <i class="bi bi-check-circle"></i>');
-                } else {
-                    // If execCommand fails, try to help user copy manually
-                    input.focus();
-                    alert('Please press Ctrl+C to copy the selected text');
-                }
-            } catch (err) {
-                console.error('Copy error:', err);
-                // Show text in alert as last resort
-                alert('Text to copy: ' + input.value);
-            }
-
-            // Remove selection
-            window.getSelection().removeAllRanges();
+        // Copiar token al portapapeles
+        function copiarToken(token) {
+            navigator.clipboard.writeText(token).then(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Copiado!',
+                    text: 'Token copiado al portapapeles',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            }).catch(() => {
+                alert('Token: ' + token);
+            });
         }
 
-
-
-        function tabchangeto(number){
-            $('.nav-link').removeClass('active');
-            $('#tab'+number).addClass('active');
-            $('.tab-pane').removeClass('active');
-            $('#tabcontent'+number).addClass('active');
+        // Generar token aleatorio en el modal
+        function generarTokenAleatorioModal() {
+            const token = Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Math.floor(Math.random() * 900 + 100);
+            document.querySelector('input[name="token"]').value = token;
         }
 
-        $('#deleterecord').unbind('click').bind('click',function () {
-            var id = $(this).data('id');
+        // Editar token
+        function editarToken(id, obs) {
+            document.getElementById('edit_token_id').value = id;
+            document.getElementById('edit_token_obs').value = obs;
+            document.getElementById('edit_token_value').value = '';
+            $('#editTokenModal').modal('show');
+        }
 
-            $.ajax({
-                type: 'DELETE',
-                url: '/tokens/'+id,
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function (data) {
-                    var deleted = data.deleted;
-
-                    if(deleted == 1) {
-                        $('#tr'+id).hide();
-                        $("#deleteRecord-close").click();
-                        $('#form1').submit()
-                    }else{
-                        console.log('no se pudo eliminar');
-                    }
+        // Eliminar token
+        function eliminarToken(id) {
+            Swal.fire({
+                title: '¿Eliminar token?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: 'DELETE',
+                        url: '/tokens/' + id,
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(data) {
+                            if (data.deleted == 1) {
+                                Swal.fire('Eliminado', 'Token eliminado correctamente', 'success');
+                                location.reload();
+                            } else {
+                                Swal.fire('Error', 'No se pudo eliminar el token', 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'Error al eliminar el token', 'error');
+                        }
+                    });
                 }
             });
-        });
-    </script>
+        }
 
+        // Exportar tokens
+        function exportarTokens() {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('_token');
+            window.location.href = '/tokens/export?' + params.toString();
+        }
+
+        // Mostrar mensajes flash
+        @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: '{{ session('success') }}',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        @endif
+
+        @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+            timer: 3000,
+            showConfirmButton: false
+        });
+        @endif
+    </script>
 @endsection

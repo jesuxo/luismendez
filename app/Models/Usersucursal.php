@@ -10,6 +10,7 @@ class Usersucursal extends Model
     use HasFactory;
 
     protected $table = 'usersucursal';
+    protected $fillable = [ 'fk_sucursal', 'fk_user'];
 
     public function sucursal  (){
         return $this->belongsTo(Sasucursal::class, 'fk_sucursal', 'id');

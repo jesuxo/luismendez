@@ -19,7 +19,10 @@ class SaexisController extends Controller
                 foreach ($productos as $prd){
 
                     if(isset($prd->codprod)){
-                        $existen = Saexis::where(['codprod'=>  $prd->codprod, 'codubic'=> $prd->codubic, 'fk_sucursal'=> $prd->fk_sucursal])->first();
+                        $existen = Saexis::where(['codprod'    => $prd->codprod,
+                                                  'codubic'    => $prd->codubic,
+                                                  'fk_sucursal'=> $prd->fk_sucursal])
+                                            ->first();
 
                         if(isset($existen->id)){
                             $existen->existen = $prd->existen;
@@ -44,7 +47,8 @@ class SaexisController extends Controller
                         $auxsucu = implode(',' , $auxsucu);
 
                         $existencias = Saexis::whereRaw("fk_sucursal in ($auxsucu) and codprod='".$prd->codprod."' and existen <> 0")
-                            ->orderBy('codubic')->get();
+                                                ->orderBy('codubic')
+                                                ->get();
 
                         $sumaexisten = 0;
                         foreach ($existencias as $existencia){

@@ -2,6 +2,15 @@
 
 use App\Http\Controllers\TonerController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\CwtransferenciasController;
+use App\Http\Controllers\SaprodController;
+use App\Http\Controllers\SaacxcController;
+use App\Http\Controllers\ComercialDashboardController;
+use App\Http\Controllers\SafactController;
+use App\Http\Controllers\SacompController;
+use App\Http\Controllers\UserSucursalController;
+use App\Http\Controllers\ImagenController;
+use App\Http\Controllers\SasucursalController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +48,17 @@ Route::group(['prefix' => 'error'], function(){
 });
 
 Route::middleware(['auth'])->group(function () {
+    // Ruta para cambiar de comercial
+    Route::get('/cambiarcomercial/{comercialId}', [ComercialDashboardController::class, 'cambiarComercial'])
+        ->name('comercial.cambiar');
+
+    // Ruta para obtener comerciales disponibles (API)
+    Route::get('/comerciales/disponibles', [ComercialDashboardController::class, 'getComercialesDisponibles'])
+        ->name('comerciales.disponibles');
+});
+
+
+Route::middleware(['auth'])->group(function () {
 
     Route::resource('tokens', \App\Http\Controllers\CwtokenController::class);
     Route::controller(\App\Http\Controllers\CwtokenController::class)->group(function () {
@@ -48,16 +68,28 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/buscarproducto/{codprod}/{comercial}', [\App\Http\Controllers\SaprodController::class, 'buscarproductoget'])->name('buscarproductoget');
 
-    Route::resource('transferencias', \App\Http\Controllers\CwtransferenciasController::class);
-    Route::controller(\App\Http\Controllers\CwtransferenciasController::class)->group(function () {
+    Route::post('/sascursal/bancos', [SasucursalController::class, 'getBancos'])->name('sucursal.bancos');
+
+    Route::resource('transferencias', CwtransferenciasController::class);
+    Route::controller( CwtransferenciasController::class)->group(function () {
 
         Route::match(['get','post'],'reporte/transferencias', 'reportetransferencias')->name('reportetransferencias');
         Route::post('transferencias/json/{busquedatransf}/{status}/{fechas}', 'json');
         Route::get('transferencias/status/{status}', 'filtrarstatus');
         Route::post('transferencias/pendienteAgain', 'pendienteAgain');
+        Route::post('transferencias/DescargarAgain', 'DescargarAgain');
         Route::post('transferencias/verificar', 'verificar');
         Route::match(['get','post'],'transferencia/informacion', 'informacion');
+        Route::post('/transferencias/verificar-tiempo-real', 'verificarTiempoReal')->name('transferencias.verificar.tiemporeal');
+        Route::post('/transferencias/buscar-numeros-similares', 'buscarNumerosSimilares')->name('transferencias.buscar.numeros');
     });
+
+    Route::get('transferencias/exportar/excel', [CwtransferenciasController::class, 'exportarExcel'])->name('transferencias.exportar.excel');
+    Route::get('transferencias/exportar/estadisticas', [CwtransferenciasController::class, 'exportarEstadisticas'])->name('transferencias.exportar.estadisticas');
+    Route::get('/transferencias/data', [CwtransferenciasController::class, 'getTransferenciasData'])->name('transferencias.data');
+    Route::get('imagen/transferencia/{id}', [ImagenController::class, 'transferencia'])->name('imagen.transferencia');
+    Route::get('transferencias/categorias/{q}', [CwtransferenciasController::class, 'getCategorias'])->name('transferencias.categorias');
+
 
     Route::get('/verpermisos/{id?}', [PermissionController::class, 'showForm'])->name('permissions.assign');
     Route::post('/verpermisos', [PermissionController::class, 'assign']);
@@ -65,6 +97,21 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/create/permissions', [PermissionController::class, 'create'])->name('permissions.create');
     Route::get('/revoke/{user}/{permiso}', [PermissionController::class, 'revokePermission'])->name('permissions.revoke');
 
+
+    Route::prefix('cxcweb')->name('cxcweb.')->group(function () {
+        Route::get('/instrumentos', [SaacxcController::class, 'getInstrumentosPago'])->name('instrumentos');
+        Route::post('/procesar-pago-web', [SaacxcController::class, 'procesarPagoWeb'])->name('procesar.pago.web');
+    });
+
+    Route::match(['get','post'],'/reporte/compra', [SacompController::class, 'reportecompra'])->name('reportecompra');
+    Route::post('/compras/documento-ajax', [SacompController::class, 'documentoAjax'])->name('compras.documento-ajax');
+
+    // Ruta para búsqueda de facturas
+    Route::get('/buscar-factura/{tipo}/{numero}', [SafactController::class, 'buscarFacturaPorNumero'])
+        ->name('documento.buscar.ajax');
+
+    Route::get('/buscar-factura/{tipo}/{numero}', [App\Http\Controllers\SafactController::class, 'buscarFacturaPorNumero'])
+        ->name('documento.buscar.ajax');
 
     Route::match(['get','post'],'/resumenVentas', [App\Http\Controllers\HomeController::class, 'resumenVentas'])->name('resumenVentas');
 
@@ -94,6 +141,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('satarj/json', 'json');
     });
 
+    Route::prefix('usersucursal')->group(function () {
+        Route::get('/', [UserSucursalController::class, 'index'])->name('usersucursal.index');
+        Route::get('/usuarios', [UserSucursalController::class, 'getUsersConSucursales'])->name('usersucursal.usuarios');
+        Route::get('/sucursales', [UserSucursalController::class, 'getAllSucursales'])->name('usersucursal.sucursales');
+        Route::get('/sucursales-asignadas/{userId}', [UserSucursalController::class, 'getSucursalesAsignadasPorUsuario']);
+        Route::get('/usuarios-por-sucursal/{sucursalId}', [UserSucursalController::class, 'getUsuariosPorSucursal']);
+        Route::post('/asignar', [UserSucursalController::class, 'asignarSucursal'])->name('usersucursal.asignar');
+        Route::post('/quitar', [UserSucursalController::class, 'quitarSucursal'])->name('usersucursal.quitar');
+    });
+
     Route::controller(\App\Http\Controllers\SaclieController::class)->group(function () {
         Route::match(['get','post'],'/clientes/{codclie?}/{tab?}', 'index')->name('buscarclientes');
     });
@@ -109,16 +166,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('saprov/json', 'json');
     });
 
-    Route::resource('productos', \App\Http\Controllers\SaprodController::class);
-    Route::controller(\App\Http\Controllers\SaprodController::class)->group(function () {
+    Route::resource('productos', SaprodController::class);
+    Route::controller(SaprodController::class)->group(function () {
+        Route::post('saprod/listprodubiccompany', 'listprodubiccompany')->name('saprod.listprodubiccompany');
         Route::get('saprod/json', 'json');
+        Route::match(['get','post'],'sugerir-transferencias', [SaprodController::class, 'sugerirTransferencias'])->name('sugerir-transferencias');
         Route::post('saprod/check/codprod/{codprod}', 'checkcodprod');
         Route::post('saprod/home/busqueda', 'busquedaHomeProd');
         Route::match(['get','post'],'existencias', 'existencias');
         Route::post('reporte/existen/php', 'existenciasphp');
         Route::match(['get','post'],'ventas/productos/sucursales', 'productossucursales');
+        Route::match(['get','post'],'ventas/resultado', 'resultadosucursales');
         Route::post('saprod/viewprodinstsanciascodalte', 'viewprodinstsanciascodalte');
         Route::match(['get','post'],'/operaciones/{codprod?}', 'index');
+        Route::get( '/existencia/celulares', 'existenciasCelulares');
+        Route::post( '/existencia/celulares/modelos', 'existenciasCelularesModelos');
+        Route::get( '/existencia/celulares/modelos/{inspadre}', 'existenciasCelularesModelos');
     });
 
     Route::resource('depositos', \App\Http\Controllers\SadepoController::class);
@@ -143,9 +206,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('{any}', [TonerController::class, 'index']);
 });
 
-Route::controller(\App\Http\Controllers\CwtransferenciasController::class)->group(function () {
-
+Route::controller(CwtransferenciasController::class)->group(function () {
     Route::get('transferencias/cambiarstatus/{Cwtransferencia}', 'cambiarstatus');
-    Route::get('transferencias/validar/{Cwtransferencia}', 'validar');
+    Route::get('transferencias/validar/{Cwtransferencia}', 'validar')->name('transferencias.validar');
 });
 

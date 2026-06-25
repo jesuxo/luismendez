@@ -15,8 +15,11 @@ class Saitemcom extends Model
         'fechal', 'fechav', 'nrolote', 'esunid', 'esexento', 'usaserv', 'preciod', 'preciod2', 'costod', 'costod2', 'costod3',
         'result', 'precioanterior', 'costoanterior', 'costoorig', 'porc1', 'porc2', 'porc3', 'fk_sucursal' ];
 
+
     public function compra  (){
-        return $this->belongsTo(Sacomp::class, 'numerod', 'numerod')->whereTipocom('Sacomp.tipocom')->whereNumerod('Sacomp.numerod');
+        return $this->belongsTo(Sacomp::class, 'numerod', 'numerod')
+            ->whereColumn('tipocom', 'sacomp.tipocom')
+            ->whereColumn('fk_sucursal', 'sacomp.fk_sucursal');
     }
 
     public function producto  (){
@@ -27,6 +30,14 @@ class Saitemcom extends Model
     public function sucursal  (){
         $comercial = session('comercialid') ;
         return $this->belongsTo(Sasucursal::class, 'fk_sucursal', 'id');
+    }
+
+    public function serialesCompra()
+    {
+        return $this->hasMany(Saseprcom::class, 'numerod', 'numerod')
+            ->whereColumn('tipocom', 'tipocom')
+            ->whereColumn('nrolinea', 'nrolinea')
+            ->whereColumn('coditem', 'coditem');
     }
 
 }

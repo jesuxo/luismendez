@@ -30,4 +30,12 @@ class Saitemfac extends Model
             ->where('fk_comercial',$comercial);;
     }
 
+    public function serialesVenta()
+    {
+        return $this->hasMany(Saseprfac::class, 'NumeroD', 'NumeroD')
+            ->whereColumn('TipoFac', 'TipoFac')
+            ->whereColumn('NroLinea', 'NroLinea')
+            ->whereColumn('CodItem', 'CodItem');
+    }
+
 }

@@ -57,24 +57,152 @@
                             <div class="col-xxl-12 col-lg-6">
                                 @if($busqueda !='')
                                     <div class="accordion accordion-flush filter-accordion">
-                                    <div class="card-body border-bottom p-0">
-                                        <div>
-                                            <p class="text-muted fs-13 mb-3">Resultados para: {{$busqueda}}</p>
-                                            @foreach($clientes as $cli)
-                                                <a href="javascript:;" onclick="$('#codclie').val('{{$cli->codclie}}'); $('#clientForm').submit()"
-                                                   class="card btn btn-soft-light  card-animate d-flex p-2 {{(isset($codclie) and $codclie !='' and $codclie == $cli->codclie)? 'codclieseleted' : ''}}
-                                                   border-bottom border-bottom-dashed  cursor-pointer"
-                                                   style="text-align: left" >
-                                                    <div class="flex-grow-1">
-                                                        <h5>{{$cli->descrip}}</h5>
-                                                        <p class="text-muted mb-0">{{$cli->codclie}}</p>
-                                                    </div>
-                                                </a>
-                                            @endforeach
+                                        <div class="card-body border-bottom p-0">
+                                            @if(isset($clientes) and count($clientes)>0)
+                                                <div>
+                                                    <p class="text-muted fs-13 mb-3">Resultados para: {{$busqueda}}</p>
+                                                    @foreach($clientes as $cli)
+                                                        <a href="javascript:;" onclick="$('#codclie').val('{{$cli->codclie}}'); $('#clientForm').submit()"
+                                                           class="card btn btn-soft-light  card-animate d-flex p-2 {{(isset($codclie) and $codclie !='' and $codclie == $cli->codclie)? 'codclieseleted' : ''}}
+                                                       border-bottom border-bottom-dashed  cursor-pointer"
+                                                           style="text-align: left" >
+                                                            <div class="flex-grow-1">
+                                                                <h5>{{$cli->descrip}}</h5>
+                                                                <p class="text-muted mb-0">{{$cli->codclie}}</p>
+                                                            </div>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <div>
+                                                    <p class="text-muted fs-13 mb-3">No se encontraron clientes para la busqueda: <b>{{$busqueda}} </b> </p>
+                                                    <a class="card btn btn-soft-light  card-animate d-flex p-2
+                                                       border-bottom border-bottom-dashed  cursor-pointer"
+                                                       style="text-align: left; display: none" >
+                                                        <div class="flex-grow-1" href="#modalCliente" data-bs-toggle="modal">
+                                                            <h6> +1  CLIENTE NUEVO </h6>
+                                                        </div>
+                                                    </a>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
-                                </div>
                                 @endif
+                            </div>
+                        </div>
+                    </form>
+
+                    <form name="form2" id="form2" class="tablelist-form"   action="{{(isset($cliente->codclie) and $cliente->codclie !='')?route('updatecliente') : route('cliente.store')}}"
+                          autocomplete="off" method="post">
+                        @csrf
+                        @method('POST')
+                        <div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalCliente" aria-hidden="true">
+                            <div class="modal-dialog modal-lg modal-dialog-scrollable ">
+                                <div class="modal-content">
+                                    <div class="modal-header px-4 pt-4">
+                                        <h5 class="modal-title" id="exampleModalLabel">Informaci&oacute;n de cliente {{(isset($cliente->codclie) and $cliente->codclie !='')? $cliente->descrip :' nuevo' }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                                                id="close-modal"></button>
+                                    </div>
+
+                                    <div class="modal-body p-4">
+                                        <div class="row">
+                                            <div id="alert-error-msg" class="d-none alert alert-danger py-2"></div>
+                                            <input type="hidden" id="id-field">
+
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="cliente-cod-field" class="form-label">C&oacute;digo</label>
+                                                    <input type="text" id="cliente-cod-field" name="codclie" value="{{(isset($cliente->codclie) and $cliente->codclie !=='')? $cliente->codclie : ((isset($busqueda) and $busqueda!='')? $busqueda:'')}}" class="form-control"
+                                                           placeholder="Ej: 0000001" readonly required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="id3-cod-field" class="form-label">C&eacute;dula / RIF</label>
+                                                    <input type="text" id="id3-cod-field" name="id3" class="form-control" value="{{(isset($cliente->codclie) and $cliente->codclie !== '') ? $cliente->id3 : ((isset($busqueda) and $busqueda != '') ? 'V-' . $busqueda : '')}}"
+                                                           placeholder="Ej: V-12312311" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <div class="mb-2">
+                                                    <label for="descrip-name-field" class="form-label">Nombre</label>
+                                                    <input type="text" id="descrip-name-field" value="{{(isset($cliente->descrip))? $cliente->descrip : ''}}" name="descrip" class="form-control"
+                                                           placeholder="Ej: Pedro Perez" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="email-field" class="form-label">  Email</label>
+                                                    <input type="email" name="email" id="email-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->email: ''}}" placeholder="Ej: correo@email.com">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="clase-field" class="form-label">  Clase</label>
+                                                    <input type="text" name="clase" id="clase-field" value="{{(isset($cliente->codclie))? $cliente->clase : ''}}" class="form-control" placeholder="" >
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="phone-field" class="form-label">Tel&eacute;fono</label>
+                                                    <input type="text" name="telef" id="phone-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->telef: ''}}" placeholder="Ej: 0414-12345678"
+                                                           required>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="represent-field" class="form-label">  Representante</label>
+                                                    <input type="text" name="represent" id="represent-field" value="{{(isset($cliente->codclie))? $cliente->represent : ''}}" class="form-control" placeholder="" >
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="movil-field" class="form-label">Celular</label>
+                                                    <input type="text" name="movil" id="movil-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->movil :''}}" placeholder="Ej: 5841412345678">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="fax-field" class="form-label">Fax</label>
+                                                    <input type="text" name="fax" id="fax-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->fax :''}}" placeholder="">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class=" ">
+                                                    <label for="direc1-field" class="form-label">Direcci&oacute;n1</label>
+                                                    <input type="text" name="direc1" id="direc1-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->direc1 :''}}" placeholder="">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class=" ">
+                                                    <label for="direc2-field" class="form-label">Direcci&oacute;n2</label>
+                                                    <input type="text" name="direc2" id="direc2-field" class="form-control" value="{{(isset($cliente->codclie))? $cliente->direc2 :''}}" placeholder="" >
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="porcIncrementa" class="form-label">Porc Incrementa</label>
+                                                    <input type="text" min="0" max="100" step="1" name="porcIncrementa" id="porcIncrementa" class="form-control" value="{{(isset($cliente->porcIncrementa))? $cliente->porcIncrementa+0 :''}}" placeholder="Ej: 15">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <div class="mb-2">
+                                                    <label for="LimiteCred" class="form-label">Limite Cr&eacute;dito </label>
+                                                    <input type="number" min="0" max="5000000" step="1" name="LimiteCred" id="LimiteCred" class="form-control" value="{{(isset($cliente->LimiteCred))? $cliente->LimiteCred+0 :''}}" placeholder="Ej: 200">
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <div class="hstack gap-2 justify-content-end">
+                                            <button type="button" class="btn btn-ghost-danger" data-bs-dismiss="modal">Cerrar</button>
+                                            <button type="button" onclick="$('#form2').submit()" class="btn btn-success">{{(isset($cliente->codclie) and $cliente->codclie !== '') ? 'Modificar': 'Crear'}}</button>
+                                        </div>
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -88,11 +216,12 @@
                         <div class="d-flex align-items-center">
                             <h5 class="card-title mb-0 flex-grow-1">{{$cliente->descrip}}</h5>
                             <div class="flex-shrink-0">
-                                <p class="mb-0">Cedula: <b>{{$cliente->id3}}</b></p>
+                                <p class="mb-0">C&eacute;dula: <b>{{$cliente->id3}}</b></p>
+                            </div>
+                            <div class="flex-shrink-0 " style="margin-left: 20px;  ">
+                                <a  class="btn btn-primary"  href="#modalCliente" data-bs-toggle="modal" >Modificar</a>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
                         @if($tab == 'tab1')
                             <div class="row">
                                 <div class="col-lg-6 mb-3">
@@ -100,64 +229,65 @@
                                         <table class="table table-borderless table-sm mb-0">
                                             <tbody>
                                             @if(isset($cliente->direc1) and strlen($cliente->direc1) > 2)
-                                            <tr bgcolor="#eee">
-                                                <td width="25%">
-                                                    Direccion1
-                                                </td>
-                                                <td width="75%" class="fw-medium">
-                                                    {{$cliente->direc1}}
-                                                </td>
-                                            </tr>
+                                                <tr bgcolor="#eee">
+                                                    <td width="25%">
+                                                        Direcci&oacute;n1
+                                                    </td>
+                                                    <td width="75%" class="fw-medium">
+                                                        {{$cliente->direc1}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->direc2) and strlen($cliente->direc2) > 2)
-                                            <tr>
-                                                <td>
-                                                    Direccion2
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->direc2}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Direcci&oacute;n2
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->direc2}}
+                                                    </td>
+                                                </tr>
                                             @endif
+
                                             @if(isset($cliente->email) and strlen($cliente->email) > 2)
-                                            <tr bgcolor="#eee">
-                                                <td>
-                                                    Email
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->email}}
-                                                </td>
-                                            </tr>
+                                                <tr bgcolor="#eee">
+                                                    <td>
+                                                        Email
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->email}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->telef) and strlen($cliente->telef) > 2)
-                                            <tr>
-                                                <td>
-                                                    Telfono
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->telef}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Tel&eacute;fono
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->telef}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->movil) and strlen($cliente->movil) > 2)
-                                            <tr bgcolor="#eee">
-                                                <td>
-                                                    Celular
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->movil}}
-                                                </td>
-                                            </tr>
+                                                <tr bgcolor="#eee">
+                                                    <td>
+                                                        Celular
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->movil}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->codzona) and strlen($cliente->codzona) > 1)
-                                            <tr>
-                                                <td>
-                                                    Zona
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->codzona}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Zona
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->codzona}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             </tbody>
                                         </table>
@@ -168,64 +298,64 @@
                                         <table class="table table-borderless table-sm mb-0">
                                             <tbody>
                                             @if(isset($cliente->tipopvp) and $cliente->tipopvp > 0)
-                                            <tr bgcolor="#eee">
-                                                <td  width="25%" >
-                                                    Tipo Precio
-                                                </td>
-                                                <td  width="75%" class="fw-medium">
-                                                    PRECIO{{$cliente->tipopvp}}
-                                                </td>
-                                            </tr>
+                                                <tr bgcolor="#eee">
+                                                    <td  width="25%" >
+                                                        Tipo Precio
+                                                    </td>
+                                                    <td  width="75%" class="fw-medium">
+                                                        PRECIO{{$cliente->tipopvp}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->codvend)  and strlen($cliente->codvend) > 2)
-                                            <tr>
-                                                <td>
-                                                    Vendedor Asig:
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->codvend}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Vendedor Asig:
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->codvend}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->clase)  and strlen($cliente->clase) > 2)
-                                            <tr bgcolor="#eee">
-                                                <td>
-                                                    Clase
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->clase}}
-                                                </td>
-                                            </tr>
+                                                <tr bgcolor="#eee">
+                                                    <td>
+                                                        Clase
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->clase}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->represent)  and strlen($cliente->represent) > 2)
-                                            <tr>
-                                                <td>
-                                                    Representante
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->represent}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Representante
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->represent}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->fax)  and strlen($cliente->fax) > 2)
-                                            <tr  bgcolor="#eee">
-                                                <td>
-                                                    Fax
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->fax}}
-                                                </td>
-                                            </tr>
+                                                <tr  bgcolor="#eee">
+                                                    <td>
+                                                        Fax
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->fax}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             @if(isset($cliente->Estado)  and $cliente->Estado >0)
-                                            <tr>
-                                                <td>
-                                                    Estado
-                                                </td>
-                                                <td class="fw-medium">
-                                                    {{$cliente->Estado}}
-                                                </td>
-                                            </tr>
+                                                <tr>
+                                                    <td>
+                                                        Estado
+                                                    </td>
+                                                    <td class="fw-medium">
+                                                        {{$cliente->Estado}}
+                                                    </td>
+                                                </tr>
                                             @endif
                                             </tbody>
                                         </table>
@@ -233,6 +363,8 @@
                                 </div>
                             </div>
                         @endif
+                    </div>
+                    <div class="card-body">
 
                         <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
                             <ul class="nav nav-pills flex-grow-1 mb-0" role="tablist">
@@ -450,7 +582,7 @@
     </div>
 
     <div class="modal fade" id="documentModal" aria-hidden="true" aria-labelledby="..." tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable" >
+        <div class="modal-dialog modal-xl modal-dialog-scrollable" >
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" > </h5>

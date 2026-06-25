@@ -19,6 +19,11 @@
 
     <!-- head css -->
     @include('layouts.head-css')
+    <style>
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
 </head>
 
 <body>
@@ -45,7 +50,19 @@
     </div>
     @include('layouts.customizer')
     @include('layouts.vendor-scripts')
-
+    <script>
+        function exportarExcel(table) {
+            var table = document.getElementById(table);
+            var html = table.outerHTML;
+            var url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+            var link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'existencias_por_marcas.xls');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
 </body>
 
 </html>

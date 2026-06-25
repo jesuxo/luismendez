@@ -11,16 +11,7 @@
 
 @endsection
 @section('content')
-    <x-breadcrumb title="Documento " pagetitle="{{($tipofac == 'A' or $tipofac == 'Z')? 'Venta':'Devolucion'}} NRO: {{$numerod}}" />
-    <div class="row justify-content-center">
-        <div class="col-xxl-9">
-            <div class="card pt-4" id="demo">
-                @include('layouts.documento')
-            </div>
-        </div>
-
-    </div>
-    <!--end row-->
+    @include('layouts.documento')
 @endsection
 @section('scripts')
     <!-- App js -->

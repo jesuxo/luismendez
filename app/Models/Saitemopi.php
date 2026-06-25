@@ -10,7 +10,7 @@ class Saitemopi extends Model
     use HasFactory;
     protected $table    = 'saitemopi';
     protected $fillable = [ 'tipoopi', 'NumeroD', 'NroLinea', 'NroLineaC', 'CodItem', 'CodUbic', 'CodUbic2', 'Descrip1',
-        'Refere', 'Signo',  'Cantidad',  'ExistAnt',  'ExistAnt2', 'CantidadC', 'Costo', 'TotalItem', 'Precio',  'FechaE',
+        'Refere', 'Signo',  'Cantidad',  'ExistAnt',  'ExistAnt2', 'CantidadC', 'Costo', 'costact', 'TotalItem', 'Precio',  'FechaE',
         'FechaL', 'FechaV', 'EsServ', 'EsUnid', 'EsExento',  'DEsSeri',   'preciod', 'fk_sucursal' ];
 
     public function operacion  (){

@@ -1,3 +1,58 @@
+<style>
+    /* Estilos existentes */
+    .badge {
+        font-size: 11px;
+        padding: 4px 6px;
+        border-radius: 12px;
+        white-space: nowrap;
+    }
+
+    .bg-opacity-10 {
+        --bs-bg-opacity: 0.1;
+    }
+
+
+    /* Nuevos estilos para la navegación */
+    .search-selected {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        border-left: 3px solid #0d6efd;
+        transition: all 0.2s ease;
+    }
+
+    .search-selected td:first-child {
+        border-left: none;
+    }
+
+    #ajaxbusquedaproductos {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    #ajaxbusquedaproductos tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    #ajaxbusquedaproductos tbody tr:hover {
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    .search-mouse-hover {
+        background-color: rgba(13, 110, 253, 0.05) !important;
+        transition: all 0.2s ease;
+    }
+
+    /* La selección activa mantiene su estilo distintivo */
+    .search-selected {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        border-left: 3px solid #0d6efd;
+    }
+
+    /* Si un elemento es hover y también está seleccionado, priorizar el estilo de selección */
+    .search-selected.search-mouse-hover {
+        background-color: rgba(13, 110, 253, 0.1) !important;
+        border-left: 3px solid #0d6efd;
+    }
+</style>
 <header id="page-topbar">
     <div class="layout-width">
         <div class="navbar-header">
@@ -36,12 +91,12 @@
                 </button>
                 <script>
                     function selectinput(){
-                        $('#search-options').focus();
+                        $('#search-options').select();
                     }
                     function focusbusqueda(){
-                        setTimeout(selectinput, 100);
+                        $('#searchModal').modal('show');
+                        setTimeout(selectinput, 600);
                     }
-
                 </script>
             </div>
 
@@ -53,63 +108,6 @@
                     </button>
                 </div>
 
-                <div class="dropdown topbar-head-dropdown ms-1 header-item dropdown-hover-end" style="display: none">
-                    <button type="button" class="btn btn-icon btn-topbar btn-ghost-dark rounded-circle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class='bi bi-grid fs-18'></i>
-                    </button>
-                    <div class="dropdown-menu dropdown-menu-lg p-0 dropdown-menu-end">
-                        <div class="p-3 border-top-0 border-start-0 border-end-0 border-dashed border">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h6 class="m-0 fw-semibold fs-15"> Top Brands</h6>
-                                </div>
-                                <div class="col-auto">
-                                    <a href="brands" class="btn btn-sm btn-soft-primary"> View All Brands
-                                        <i class="ri-arrow-right-s-line align-middle"></i></a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="p-2">
-                            <div class="row g-0">
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-2.png') }}" alt="Github">
-                                        <!-- <span>GitHub</span> -->
-                                    </a>
-                                </div>
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-3.png') }}" alt="Github">
-                                    </a>
-                                </div>
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-13.png') }}" alt="Github">
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="row g-0">
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-5.png') }}" alt="Github">
-                                    </a>
-                                </div>
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-6.png') }}" alt="Github">
-                                    </a>
-                                </div>
-                                <div class="col">
-                                    <a class="dropdown-icon-item" href="#!">
-                                        <img src="{{ URL::asset('build/images/brands/img-4.png') }}" alt="Github">
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="dropdown topbar-head-dropdown ms-1 header-item dropdown-hover-end" style="display: none">
                     <button type="button" class="btn btn-icon btn-topbar btn-ghost-dark rounded-circle" id="page-header-cart-dropdown" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-haspopup="true" aria-expanded="false">
@@ -259,53 +257,79 @@
                     </div>
                 </div>
 
-                <div class="dropdown topbar-head-dropdown ms-1 header-item dropdown-hover-end"  >
+                <div class="dropdown topbar-head-dropdown ms-1 header-item dropdown-hover-end">
                     <button type="button" class="btn btn-icon btn-topbar btn-ghost-dark rounded-circle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="bi bi-arrow-left-right align-middle fs-20 "></i>
                     </button>
-                    <div class="dropdown-menu p-2 dropdown-menu-end" id="light-dark-mode" style="width: 400px">
+                    <div class="dropdown-menu p-2 dropdown-menu-end" style="width: 400px">
                         <div class="dropdown-head rounded-top">
                             <div class="p-3 border-bottom border-bottom-dashed">
                                 <div class="row align-items-center">
                                     <div class="col">
-                                        <h6 class="mb-0 fs-16 fw-semibold"> Grupo de empresas
-                                            <span class="badge bg-danger-subtle text-danger  fs-13 notification-badge">
-                                                @php $count = 0;@endphp
-                                                @if(isset($comerciales))
-                                                    @foreach($comerciales as $comercial)
-                                                        @php @$count++;@endphp
-                                                    @endforeach
-                                                @endif
-                                                {{$count}}
-                                            </span>
+                                        <h6 class="mb-0 fs-16 fw-semibold">Grupo de Empresas
+                                            <span class="badge bg-danger-subtle text-danger fs-13 notification-badge">
+                                {{ isset($comerciales_acceso) ? count($comerciales_acceso) : 0 }}
+                            </span>
                                         </h6>
-                                        <p class="fs-14 text-muted mt-1 mb-0"> Seleccione el grupo que necesita consutar </p>
+                                        <p class="fs-14 text-muted mt-1 mb-0">Seleccione el grupo que necesita consultar</p>
                                     </div>
-                                    <div class="col-auto dropdown" style="display: none">
-                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" class="link-secondar2 fs-15" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></a>
-                                        <ul class="dropdown-menu" style="">
-                                            <li><a class="dropdown-item" href="#">All Clear</a></li>
-                                            <li><a class="dropdown-item" href="#">Mark all as read</a></li>
-                                            <li><a class="dropdown-item" href="#">Archive All</a></li>
-                                        </ul>
+                                    <div class="col-auto">
+                                        <a href="javascript:void(0);" class="link-secondary fs-15" id="refreshComerciales">
+                                            <i class="bi bi-arrow-repeat"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
-                        @php
-                        $comerciales = \App\Models\Sacomercial::orderBy('id')->get();
-                        @endphp
-                        @if(isset($comerciales))
-                            @foreach($comerciales as $comercial)
-                                <a href="/cambiarcomercial/{{$comercial->id}}"
-                                   class="dropdown-item @if(session('comercialid') == $comercial->id) text-primary @endif" data-mode="light">
-                                    <i class="bi bi-shop"></i>
-                                    @if(session('comercialid') == $comercial->id)
-                                        >>
-                                    @endif
-                                    {{$comercial->descrip}}</a>
-                            @endforeach
+
+                        <div class="dropdown-body" style="max-height: 400px; overflow-y: auto;">
+                            @php
+                                $user = Auth::user();
+                                $comerciales_acceso = $user ? $user->getComercialesAcceso() : collect();
+                                $comercialdata = session('comercialdata');
+                            @endphp
+
+                            @if($comerciales_acceso->count() > 0)
+                                @foreach($comerciales_acceso as $comercial)
+                                    <a href="{{ route('comercial.cambiar', $comercial->id) }}"
+                                       class="dropdown-item {{ session('comercialid') == $comercial->id ? 'active bg-primary text-white' : '' }}"
+                                       data-comercial-id="{{ $comercial->id }}">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-shop me-2 fs-16"></i>
+                                            <div class="flex-grow-1">
+                                                <span class="fw-medium">{{ $comercial->descrip }}</span>
+                                                @if(session('comercialid') == $comercial->id)
+                                                    <span class="badge bg-success ms-2">Activo</span>
+                                                @endif
+                                            </div>
+                                            @if(session('comercialid') == $comercial->id)
+                                                <i class="bi bi-check-lg text-white fs-16"></i>
+                                            @endif
+                                        </div>
+                                        <small class="text-muted d-block mt-1 ms-4 ps-1">
+                                            <i class="bi bi-building"></i>
+                                            {{ $comercial->sucursales->count() }} sucursal(es) asignada(s)
+                                        </small>
+                                    </a>
+                                @endforeach
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
+                                    <p class="mt-2 text-muted">No tienes comerciales asignados</p>
+                                    <small class="text-muted">Contacta al administrador</small>
+                                </div>
+                            @endif
+                        </div>
+
+                        @if($comerciales_acceso->count() > 0)
+                            <div class="dropdown-foot p-2 border-top border-top-dashed mt-2">
+                                <div class="text-center">
+                                    <small class="text-muted">
+                                        <i class="bi bi-info-circle"></i>
+                                        Cambiar el grupo de empresas actualizará la información mostrada
+                                    </small>
+                                </div>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -609,22 +633,26 @@
                         <a class="dropdown-item"  style="display: none" href="javascript:void(0)"><span class="badge bg-success-subtle text-success float-end ms-2">New</span><i class="bi bi-cassette text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Frontend</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="account-setting"  style="display: none"><i class="bi bi-gear text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Settings</span></a>
-                        <a class="dropdown-item" href="{{ url('logout') }}"><i class="bi bi-box-arrow-right text-muted fs-15 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">{{ __('t-logout') }}</span></a>
+                        <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right text-muted fs-15 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">{{ __('t-logout') }}</span></a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <form  method="POST" style="display: none;"  action="{{ route('logout') }}" id="logout-form">
+        @csrf
+    </form>
 </header>
 
 
 <!-- Modal -->
 <div class="modal fade" id="searchModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content rounded">
             <div class="modal-header p-3">
                 <div class="position-relative w-100">
-                    <input type="text" class="form-control form-control-lg border-2 busquedaproductos" placeholder="Busqueda de productos..." autocomplete="off" id="search-options" value="">
+                    <input type="text" class="form-control form-control-lg border-2 busquedaproductos"
+                           placeholder="Busqueda de productos..." autocomplete="off" id="search-options" value="" onchange="performSearch($(this).val())">
                     <span class="bi bi-search search-widget-icon fs-17"></span>
                     <a href="javascript:void(0);" class="search-widget-icon fs-14 link-secondary text-decoration-underline search-widget-icon-close d-none" id="search-close-options">Limpiar</a>
                 </div>
@@ -638,7 +666,7 @@
                                 <h6 class="m-0 fs-14 text-muted fw-semibold"> Coincidencias con la busqueda </h6>
                             </div>
                             <div class="col" style="text-align: right">
-                                <h6 class="m-0 fs-14 text-muted fw-semibold"> Coincidencias con la busqueda </h6>
+                                <h6 class="m-0 fs-14 text-muted fw-semibold" id="textbusqueda"> </h6>
                             </div>
                         </div>
                     </div>
@@ -648,31 +676,112 @@
                     </div>
 
                     <script>
+                        $(document).ready(function() {
+                            let currentSelectedIndex = -1;
+                            let searchResults = [];
+                            let isScrolling = false;
+                            let mouseOverIndex = -1;
+                            let isNavigatingWithKeyboard = false;
 
-                        $( document ).ready(function() {
 
 
-                            $('.busquedaproductos').unbind('change').bind('change',function () {
+                            // Variable para saber si ya se realizó una búsqueda
+                            let hasSearchResults = false;
 
-                                var busqueda  = $(this).val();
+                            // Evento para el input de búsqueda
 
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/saprod/home/busqueda',
-                                    headers: {
-                                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                                    },
-                                    data:{ busqueda: busqueda },
-                                    success: function (response) {
-                                        $('#ajaxbusquedaproductos').html(response);
-                                    }
-                                });
+
+                            // Evento para el botón "Limpiar"
+                            $('#search-close-options').off('click').on('click', function() {
+                                $('#search-options').val('');
+                                $('#textbusqueda').html('');
+                                $('#ajaxbusquedaproductos').html('');
+                                searchResults = [];
+                                currentSelectedIndex = -1;
+                                mouseOverIndex = -1;
+                                hasSearchResults = false;
+                                $('#search-options').focus();
                             });
 
+                            // Cuando se abre el modal
+                            $('#searchModal').off('shown.bs.modal').on('shown.bs.modal', function() {
+                                const $input = $('#search-options');
+                                $input.focus();
+                                currentSelectedIndex = -1;
+                                searchResults = [];
+                                mouseOverIndex = -1;
+                                hasSearchResults = false;
+
+                                // Limpiar búsqueda anterior
+                                $input.val('');
+                                $('#textbusqueda').html('');
+                                $('#ajaxbusquedaproductos').html('');
+                            });
+
+                            // Cuando se cierra el modal
+                            $('#searchModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+                                currentSelectedIndex = -1;
+                                searchResults = [];
+                                mouseOverIndex = -1;
+                                hasSearchResults = false;
+                            });
+
+                            // Navegación con mouse - SOLO efecto visual
+                            $(document).off('mouseenter.searchModal', '#ajaxbusquedaproductos tbody tr').on('mouseenter.searchModal', '#ajaxbusquedaproductos tbody tr', function() {
+                                if ($('#searchModal').hasClass('show') && !isNavigatingWithKeyboard) {
+                                    const index = searchResults.indexOf(this);
+                                    if (index !== -1 && index !== currentSelectedIndex) {
+                                        mouseOverIndex = index;
+                                        $('.search-mouse-hover').removeClass('search-mouse-hover');
+                                        $(this).addClass('search-mouse-hover');
+                                    }
+                                }
+                            });
+
+                            $(document).off('mouseleave.searchModal', '#ajaxbusquedaproductos tbody tr').on('mouseleave.searchModal', '#ajaxbusquedaproductos tbody tr', function() {
+                                if ($('#searchModal').hasClass('show')) {
+
+                                    $('.search-mouse-hover').removeClass('search-mouse-hover');
+                                }
+                            });
+
+
                         });
+                        function updateSearchResults(response) {
+                            $('#ajaxbusquedaproductos').html(response);
 
+                        }
 
+                        function performSearch(busqueda) {
+                            if (busqueda.trim() !== '') {
+                                $('#textbusqueda').html("Búsqueda: " + busqueda);
+                            } else {
+                                $('#textbusqueda').html('');
+                                $('#ajaxbusquedaproductos').html('');
+                                searchResults = [];
+                                currentSelectedIndex = -1;
+                                mouseOverIndex = -1;
+                                return;
+                            }
 
+                            $('#ajaxbusquedaproductos').html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div><p class="mt-2">Buscando productos...</p></div>');
+
+                            $.ajax({
+                                type: 'POST',
+                                url: '/saprod/home/busqueda',
+                                headers: {
+                                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                },
+                                data: { busqueda: busqueda },
+                                success: function(response) {
+                                    updateSearchResults(response);
+                                },
+                                error: function(xhr, status, error) {
+                                    console.error('Error en búsqueda:', error);
+                                    $('#ajaxbusquedaproductos').html('<div class="text-center p-4 text-danger">Error al realizar la búsqueda</div>');
+                                }
+                            });
+                        }
                     </script>
                 </div>
 
@@ -688,7 +797,7 @@
 
                         <div class="notification-group-list">
                             <h5 class="text-overflow text-muted fs-13 mb-2 mt-3 text-uppercase notification-title">Links</h5>
-                            <a href="javascript:void(0);" class="list-group-item dropdown-item notify-item"><i class="bi bi-link-45deg me-2 align-middle"></i> <span>www.themesbrand.com</span></a>
+                            <a href="javascript:void(0);" class="list-group-item dropdown-item notify-item"><i class="bi bi-link-45deg me-2 align-middle"></i> <span>www.wwww.com</span></a>
                         </div>
 
                         <div class="notification-group-list">
@@ -754,3 +863,12 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<script>
+    document.addEventListener('keydown', function(e) {
+        /*if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'F')) {
+            e.preventDefault(); // Prevenir el comportamiento predeterminado del navegador
+            focusbusqueda(); // Ejecutar tu función
+        }*/
+    });
+</script>
