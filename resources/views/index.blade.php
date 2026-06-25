@@ -307,13 +307,13 @@
                     <div class="card-header bg-transparent border-0">
                         <h5 class="section-title mb-0">
                             <i class="ri-cellphone-fill"></i>
-                            Existencias Celulares
+                            Existencias Cauchos
                         </h5>
                     </div>
 
                     <div class="card-footer bg-transparent border-0">
-                        <a href="/existencia/celulares" class="btn btn-outline-warning w-100">
-                            Gestionar celulares
+                        <a href="/existencia/cauchos" class="btn btn-outline-warning w-100">
+                            ver reporte
                         </a>
                     </div>
                 </div>

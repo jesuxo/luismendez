@@ -1069,7 +1069,7 @@ class SaprodController extends Controller
         }
 
         $instancias = Sainsta::selectRaw("  Descrip as label, descrip, id, nivel, codinst , codalte")
-                        ->whereRaw("nivel=2 AND   tipoins=0 and codalte like 'S01.%' and comercial=$comercial")
+                        ->whereRaw("nivel=2 AND   tipoins=0 and codalte like '1.%' and comercial=$comercial")
                         ->orderBy('descrip','asc')->get();
 
         $instanciarr = $instancias->pluck('codinst');
