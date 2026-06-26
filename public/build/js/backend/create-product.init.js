@@ -1,15 +1,12 @@
  //* choices category input
-var productCategoryInput = new Choices('#choices-category-input', {
-    searchEnabled: false,
-    shouldSort: false,
-});
+
 
 var editinputValueJson = sessionStorage.getItem('editInputValue');
 if (editinputValueJson) {
     var editinputValueJson = JSON.parse(editinputValueJson);
     document.getElementById("formAction").value = "edit";
     document.getElementById("product-id-input").value = editinputValueJson.id;
-    productCategoryInput.setChoiceByValue(editinputValueJson.category);
+
     myDropzone.options.addedfile.call(myDropzone, mockFile);
     myDropzone.options.thumbnail.call(myDropzone, mockFile, editinputValueJson.productImg);
     thumbnailArray.push(editinputValueJson.productImg)
@@ -56,12 +53,12 @@ Array.prototype.slice.call(forms).forEach(function (form) {
         } else {
             event.preventDefault();
 
-            var productCategoryValue = productCategoryInput.getValue(true);
+            var productCategoryValue =  $('#datacodinst').val();
 
             var codprod    = document.getElementById("codprod").value;
             var formAction = document.getElementById("formAction").value;
 
-            if (formAction == "add" && productCategoryValue !== "" ) {
+            if (formAction == "add" && productCategoryValue  >0 ) {
                 var check = 0;
 
                 $.ajax({

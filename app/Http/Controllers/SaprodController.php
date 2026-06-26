@@ -1486,46 +1486,102 @@ class SaprodController extends Controller
 
     public function store(Request $request)
     {
-
         $validated = $request->validate([
-            'codinst' => 'required',
-            'codprod' => 'required|unique:saprod,codprod,NULL,id,codinst,' . $request->codinst,
-            'descrip' => 'required',
+            'codinst' => 'required|exists:sainsta,codinst',
+            'codprod' => 'required|max:15|regex:/^[a-zA-Z0-9\-]+$/',
+            'descrip' => 'required|string|max:255',
         ], [
-            'codprod.unique' => 'El código ya existe en esta instancia',
+            'codinst.required' => 'Por favor, seleccione una instancia del inventario',
+            'codinst.exists' => 'La instancia seleccionada no es válida',
+            'codprod.required' => 'Por favor, ingrese el código del producto',
+            'codprod.regex' => 'El código solo puede contener letras, números y guiones',
+            'codprod.max' => 'El código no puede tener más de 15 caracteres',
+            'descrip.required' => 'Por favor, ingrese el nombre/descripción del producto',
         ]);
 
         try {
+            $comercialId = session('comercialid');
 
-            $comercial = session('comercialid') ;
-
-            $comercial    = Sacomercial::find($comercial);
-            $match        = $comercial->match;
-
-            $comerciales = Sacomercial::where('match',$match)->get();
-
-            foreach ($comerciales as $comercial){
-                $newprod = new Saprod();
-                $newprod->fill($request->all());
-                $newprod->codprod   = substr($request->codprod,0,15);
-
-                if(isset($request->preciodpro) and $request->preciodpro >0) {
-                    $newprod->preciodant  = 0;
-                    $newprod->preciod     = $request->preciodpro;
-                    $newprod->preciodpro  = $request->preciodpro;
-                }
-                if(isset($request->costod3) and $request->costod3 >0) {
-                    $newprod->costod  = $request->costod3;
-                    $newprod->costod2 = $request->costod3;
-                    $newprod->costod3 = $request->costod3;
-                }
-                $newprod->comercial = $comercial->id;
-                $newprod->save();
+            if (!$comercialId) {
+                $comercialId = 1;
+                session(['comercialid' => 1]);
             }
-            return redirect()->route('productos.index');
+
+            $comercial = Sacomercial::find($comercialId);
+
+            if (!$comercial) {
+                throw new \Exception('Comercial no encontrado');
+            }
+
+            $match = $comercial->match;
+
+            // Check if product code already exists in this commercial group
+            $exists = Saprod::where('codprod', $request->codprod)
+                ->whereIn('comercial', function($query) use ($match) {
+                    $query->select('id')
+                        ->from('sacomercial')
+                        ->where('match', $match);
+                })
+                ->exists();
+
+            if ($exists) {
+                return back()
+                    ->withErrors(['codprod' => 'El código ya existe en el inventario'])
+                    ->withInput();
+            }
+
+            $comerciales = Sacomercial::where('match', $match)->get();
+
+            if ($comerciales->isEmpty()) {
+                throw new \Exception('No se encontraron comerciales para crear el producto');
+            }
+
+            $productosCreados = 0;
+
+            foreach ($comerciales as $comercial) {
+                $newprod = new Saprod();
+                $newprod->codinst = $request->codinst;
+                $newprod->codprod = strtoupper(substr($request->codprod, 0, 15));
+                $newprod->descrip = $request->descrip;
+                $newprod->descrip2 = $request->descrip2 ?? null;
+                $newprod->descrip3 = $request->descrip3 ?? null;
+                $newprod->marca = $request->marca ?? null;
+                $newprod->unidad = $request->unidad ?? null;
+                $newprod->refere = $request->refere ?? null;
+                $newprod->observaciones = $request->observaciones ?? null;
+
+                // Set prices
+                $newprod->preciodant = 0;
+                $newprod->preciod = $request->preciodpro ?? 0;
+                $newprod->preciodpro = $request->preciodpro ?? 0;
+                $newprod->costod = $request->costod3 ?? 0;
+                $newprod->costod2 = $request->costod3 ?? 0;
+                $newprod->costod3 = $request->costod3 ?? 0;
+
+                $newprod->activo = $request->activo ?? 1;
+                $newprod->comercial = $comercial->id;
+
+                $newprod->esexento = 1;
+
+                $newprod->save();
+                $productosCreados++;
+            }
+
+            // Mensaje de éxito con detalles
+            $mensaje = "Producto '{$request->descrip}' creado exitosamente";
+            if ($productosCreados > 1) {
+                $mensaje .= " en {$productosCreados} comerciales";
+            }
+
+            return redirect()->route('productos.index')
+                ->with('success', $mensaje);
 
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Error al crear el producto: ' . $e->getMessage()])
+            \Log::error('Error al crear producto: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return back()
+                ->withErrors(['error' => 'Error al crear el producto: ' . $e->getMessage()])
                 ->withInput();
         }
     }
