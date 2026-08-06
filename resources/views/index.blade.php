@@ -176,6 +176,7 @@
     </style>
 @endsection
 @section('content')
+    @if(Auth::user() and auth()->user()->can('ver_inicio'))
     <!-- Sección de Bienvenida -->
     <div class="row  ">
         <div class="col-12">
@@ -412,6 +413,7 @@
             </div>
         </div>
     </div>
+    @endif
 @endsection
 @section('scripts')
     <!-- App js -->

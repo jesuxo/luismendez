@@ -66,6 +66,7 @@
                 </li>
 
                 <!-- Inventario -->
+                @if(Auth::user() and auth()->user()->can('menu_inventario'))
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarProducts" data-bs-toggle="collapse" role="button"
                        aria-expanded="false" aria-controls="sidebarProducts">
@@ -112,6 +113,7 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
                 <!-- Proveedores -->
                 @if(Auth::user() and auth()->user()->can('menu_proveedores'))
@@ -139,6 +141,7 @@
                     </li>
                 @endif
 
+                @if(Auth::user() and auth()->user()->can('menu_clientes'))
                 <!-- Clientes -->
                 <li class="nav-item">
                     <a class="nav-link menu-link" href="#sidebarClientes" data-bs-toggle="collapse"
@@ -160,6 +163,7 @@
                         </ul>
                     </div>
                 </li>
+                @endif
 
                 @if(Auth::user() and auth()->user()->can('menu_vendedores'))
                     <!-- Vendedores -->
