@@ -38,18 +38,26 @@
 
             <tr>
                 <td class="align-middle">
+                    @if(Auth::user() and auth()->user()->can('menu_inventario'))
                     <a href="{{ route('productos.edit', $producto->id) }}" class="fw-medium link-primary">
                         {{ $producto->codprod }}
                     </a>
+                    @else
+                        {{ $producto->codprod }}
+                    @endif
                 </td>
                 <td class="align-middle">
                     <div class="d-flex justify-content-between align-items-center">
+                        @if(Auth::user() and auth()->user()->can('menu_inventario'))
                         <a href="{{ route('productos.edit', $producto->id) }}" class="fw-medium link-primary">
                             {{ $producto->descrip }}
                         </a>
                         <a href="{{ route('productos.edit', $producto->id) }}" class="ms-2">
                             <i class="bi-pencil-square text-primary"></i>
                         </a>
+                        @else
+                            {{ $producto->descrip }}
+                        @endif
                     </div>
                 </td>
                 <td class="text-end align-middle">
