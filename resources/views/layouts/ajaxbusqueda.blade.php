@@ -87,9 +87,11 @@
 
                 <!-- Ver Operaciones -->
                 <td class="text-center align-middle">
+                    @if(Auth::user() and auth()->user()->can('menu_inventario'))
                     <a href="/operaciones/{{ $producto->codprod }}" class="btn btn-sm btn-outline-primary" title="Ver operaciones">
                         <i class="bi-bar-chart"></i>
                     </a>
+                    @endifs
                 </td>
             </tr>
         @endforeach
