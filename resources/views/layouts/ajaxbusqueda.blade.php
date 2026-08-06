@@ -4,7 +4,9 @@
         <tr>
             <th width="5%" class="text-center">Código</th>
             <th width="40%" class="text-center">Producto</th>
-            <th width="8%" class="text-center">CostoPro </th>
+            @if(Auth::user() and auth()->user()->can('menu_inventario'))
+                 <th width="8%" class="text-center">CostoPro </th>
+            @endif
             <th width="8%" class="text-center">Precio3</th>
             <th width="25%" class="text-center">Existencias por Sucursal</th>
             <th width="5%" class="text-center">Total</th>
@@ -60,9 +62,13 @@
                         @endif
                     </div>
                 </td>
+                @if(Auth::user() and auth()->user()->can('menu_inventario'))
                 <td class="text-end align-middle">
+
                     ${{ number_format($producto->preciodpro, 2, ',', '.') }}
+
                 </td>
+                @endif
                 <td class="text-end align-middle">
                     ${{ number_format($producto->costod3, 2, ',', '.') }}
                 </td>
@@ -114,12 +120,12 @@
                         </a>
                     </div>
                 </td>
-                <td colspan="5" class="text-center py-4">
+                <td colspan="{{ (Auth::user() and auth()->user()->can('menu_inventario'))? '5' : '4' }}"
+                    class="text-center py-4">
                     <div class="text-muted">
                         <i class="bi-search fs-1 d-block mb-2"></i>
                         <h6>No se encontraron productos</h6>
                         <p class="mb-2">Intenta con otros términos de búsqueda</p>
-
                     </div>
                 </td>
 
