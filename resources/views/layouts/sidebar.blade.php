@@ -42,12 +42,8 @@
                             </li>
                         </ul>
                         @if(Auth::user() and auth()->user()->type == 'admin')
+                            @if(Auth::user() and auth()->user()->can('reportes_venta'))
                             <ul class="nav nav-sm flex-column">
-                                @if(session('comercialid') == 1)
-                                    <li class="nav-item">
-                                        <a href="/tesoro" class="nav-link" data-key="t-confirm-payment">Confirmar Pago Móvil</a>
-                                    </li>
-                                @endif
                                 <li class="nav-item">
                                     <a href="/reporte/venta" class="nav-link" data-key="t-sales-report">Reporte de Ventas</a>
                                 </li>
@@ -61,6 +57,7 @@
                                     <a href="/resumenVentas" class="nav-link" data-key="t-sales-summary">Resumen Ventas</a>
                                 </li>
                             </ul>
+                            @endif
                         @endif
                     </div>
                 </li>
