@@ -91,7 +91,7 @@
                     <a href="/operaciones/{{ $producto->codprod }}" class="btn btn-sm btn-outline-primary" title="Ver operaciones">
                         <i class="bi-bar-chart"></i>
                     </a>
-                    @endifs
+                    @endif
                 </td>
             </tr>
         @endforeach
