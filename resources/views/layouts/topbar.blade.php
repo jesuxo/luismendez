@@ -629,8 +629,10 @@
                         <h6 class="dropdown-header"> {{@Auth::user()->first_name}} {{@Auth::user()->last_name}}</h6>
                         <a class="dropdown-item" style="display: none" href="account"><i class="bi bi-person-circle text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Profile</span></a>
                         <a class="dropdown-item" style="display: none"href="calendar"><i class="bi bi-cart4 text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Order Track</span></a>
+                        @if(Auth::user() and auth()->user()->can('menu_inventario'))
                         <a class="dropdown-item" href="/productos"><i class="bi bi-box-seam text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Productos</span></a>
-                        <a class="dropdown-item"  style="display: none" href="javascript:void(0)"><span class="badge bg-success-subtle text-success float-end ms-2">New</span><i class="bi bi-cassette text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Frontend</span></a>
+                        @endif
+                            <a class="dropdown-item"  style="display: none" href="javascript:void(0)"><span class="badge bg-success-subtle text-success float-end ms-2">New</span><i class="bi bi-cassette text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Frontend</span></a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="account-setting"  style="display: none"><i class="bi bi-gear text-muted fs-15 align-middle me-1"></i> <span class="align-middle">Settings</span></a>
                         <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i class="bi bi-box-arrow-right text-muted fs-15 align-middle me-1"></i> <span class="align-middle" data-key="t-logout">{{ __('t-logout') }}</span></a>
