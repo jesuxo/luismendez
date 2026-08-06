@@ -10,7 +10,9 @@
             <th width="8%" class="text-center">Precio3</th>
             <th width="25%" class="text-center">Existencias por Sucursal</th>
             <th width="5%" class="text-center">Total</th>
+            @if(Auth::user() and auth()->user()->can('menu_inventario'))
             <th width="5%" class="text-center">Ver Oper</th>
+            @endif
         </tr>
         </thead>
         <tbody>
@@ -98,15 +100,16 @@
                             {{ number_format($totalExistencias, 0) }}
                         </span>
                 </td>
-
+                @if(Auth::user() and auth()->user()->can('menu_inventario'))
                 <!-- Ver Operaciones -->
                 <td class="text-center align-middle">
-                    @if(Auth::user() and auth()->user()->can('menu_inventario'))
+
                     <a href="/operaciones/{{ $producto->codprod }}" class="btn btn-sm btn-outline-primary" title="Ver operaciones">
                         <i class="bi-bar-chart"></i>
                     </a>
-                    @endif
+
                 </td>
+                @endif
             </tr>
         @endforeach
 
@@ -120,7 +123,7 @@
                         </a>
                     </div>
                 </td>
-                <td colspan="{{ (Auth::user() and auth()->user()->can('menu_inventario'))? '5' : '4' }}"
+                <td colspan="{{ (Auth::user() and auth()->user()->can('menu_inventario'))? '5' : '3' }}"
                     class="text-center py-4">
                     <div class="text-muted">
                         <i class="bi-search fs-1 d-block mb-2"></i>
