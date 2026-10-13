@@ -30,6 +30,11 @@ Route::group([ 'middleware' => 'check.user'], function () {
         Route::post('token/new', 'newtoken');
     });
 
+    Route::controller(\App\Http\Controllers\CwtransferenciasController::class)->group(function () {
+        Route::post('cwtransferencia/sync/list', 'list');
+        Route::post('cwtransferencia/sync/apiStatus', 'apiStatus');
+    });
+
     Route::controller(\App\Http\Controllers\SavendController::class)->group(function () {
         Route::post('savend/sync/list', 'list');
     });
