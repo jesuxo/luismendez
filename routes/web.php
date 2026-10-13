@@ -205,6 +205,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/reporte/venta/sucu', [App\Http\Controllers\HomeController::class, 'reporteventasucu'])->name('reporteventasucu');
     Route::get('/cambiarcomercial/{comercialid}', [App\Http\Controllers\HomeController::class, 'cambiarcomercial'])->name('cambiarcomercial');
 
+    Route::get('/bancos/{id}/moneda', function($id) {
+        $banco = \App\Models\Cwbancos::find($id);
+        if ($banco->bs)      return response()->json(['moneda' => 'BS']);
+        if ($banco->dolares) return response()->json(['moneda' => 'USD']);
+        if ($banco->pesos)   return response()->json(['moneda' => 'COP']);
+        return response()->json(['moneda' => 'BS']);
+    });
+
     Route::match(['get','post'],'/', [App\Http\Controllers\HomeController::class, 'index'])->name('index');
 
     Route::match(['get','post'],'/index', [App\Http\Controllers\HomeController::class, 'index'])->name('index');
