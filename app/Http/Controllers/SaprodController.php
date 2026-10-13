@@ -1339,7 +1339,7 @@ class SaprodController extends Controller
         }
 
         // Consulta
-        $sqlcostoinv = "SELECT a.preciodant, a.preciodpro, a.preciod, a.descrip, a.descrip2,
+        $sqlcostoinv = "SELECT a.preciodant, a.preciodpro, a.preciod, a.costod3, a.descrip, a.descrip2,
                            a.codprod, e.codubic, b.existen, e.descrip as deposito
                     FROM saprod a
                     INNER JOIN saexis b ON a.codprod = b.codprod
@@ -1368,6 +1368,7 @@ class SaprodController extends Controller
                     'descrip2'   => $producto->descrip2,
                     'preciodpro' => $producto->preciodpro,
                     'preciod'    => $producto->preciod,
+                    'costod3'    => $producto->costod3,
                     'preciodant' => $producto->preciodant ?? 0,
                 ];
             }

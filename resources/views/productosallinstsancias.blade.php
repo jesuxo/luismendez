@@ -570,9 +570,9 @@
                     <tr bgcolor="{{ $bgcolor }}" style="color:#2c3e50;">
                         <td align="left" class="codigo-prod-modal">{{ $index }}</td>
                         <td align="left" class="nombre-prod-modal">{{ $producto['descrip'] ?? '' }}</td>
-                        <td align="left" class="nombre-prod-modal">{{ $producto['preciodpro'] ?? '' }}</td>
-                        <td align="left" class="nombre-prod-modal">{{ $producto['preciod'] ?? '' }}</td>
-                        <td align="left" class="nombre-prod-modal">{{ $producto['costod3'] ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ number_format($producto['preciodpro'],2,',','.') ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ number_format($producto['preciod'],2,',','.')    ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ number_format($producto['costod3'],2,',','.')    ?? '' }}</td>
                         <td align="left" class="descrip2-prod-modal">
                             {{ $producto['descrip2'] ?? '-' }}
                         </td>
