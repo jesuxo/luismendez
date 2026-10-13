@@ -10,6 +10,9 @@ use App\Http\Controllers\SafactController;
 use App\Http\Controllers\SacompController;
 use App\Http\Controllers\UserSucursalController;
 use App\Http\Controllers\ImagenController;
+use App\Http\Controllers\SaprovController;
+use App\Http\Controllers\SaprodImagenController;
+use App\Http\Controllers\CwtokenController;
 use App\Http\Controllers\SasucursalController;
 use Illuminate\Support\Facades\Route;
 
@@ -60,15 +63,24 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    Route::resource('tokens', \App\Http\Controllers\CwtokenController::class);
-    Route::controller(\App\Http\Controllers\CwtokenController::class)->group(function () {
-        Route::match(['get','post'],'reporte/tokens', 'reportetokens')->name('reportetokens');
-        Route::post('token/update', 'tokenupdate')->name('tokenupdate');
+    Route::resource('tokens',  CwtokenController::class);
+    Route::prefix('tokens')->group(function () {
+        Route::get('/', [CwtokenController::class, 'reportetokens'])->name('reportetokens');
+        Route::post('/', [CwtokenController::class, 'reportetokens']);
+        Route::post('/store', [CwtokenController::class, 'store'])->name('tokens.store');
+        Route::post('/update', [CwtokenController::class, 'tokenupdate'])->name('token.update');
+        Route::post('/generar-auto', [CwtokenController::class, 'generarTokenAuto']);
+        Route::post('/new', [CwtokenController::class, 'newtoken']);
+        Route::get('/export', [CwtokenController::class, 'export']);
+        Route::delete('/{id}', [CwtokenController::class, 'destroy']);
+        Route::post('/bulk-delete', [CwtokenController::class, 'bulkDelete']);
     });
 
     Route::get('/buscarproducto/{codprod}/{comercial}', [\App\Http\Controllers\SaprodController::class, 'buscarproductoget'])->name('buscarproductoget');
 
-    Route::post('/sascursal/bancos', [SasucursalController::class, 'getBancos'])->name('sucursal.bancos');
+    Route::controller(SasucursalController::class)->group(function () {
+        Route::post('sascursal/bancos', 'bancos');
+    });
 
     Route::resource('transferencias', CwtransferenciasController::class);
     Route::controller( CwtransferenciasController::class)->group(function () {
@@ -110,9 +122,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/buscar-factura/{tipo}/{numero}', [SafactController::class, 'buscarFacturaPorNumero'])
         ->name('documento.buscar.ajax');
 
-    Route::get('/buscar-factura/{tipo}/{numero}', [App\Http\Controllers\SafactController::class, 'buscarFacturaPorNumero'])
-        ->name('documento.buscar.ajax');
-
     Route::match(['get','post'],'/resumenVentas', [App\Http\Controllers\HomeController::class, 'resumenVentas'])->name('resumenVentas');
 
     Route::match(['get','post'],'/tesoro', [App\Http\Controllers\TesoroController::class, 'index'])->name('tesoro');
@@ -129,6 +138,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('doc/{tipofac}/{numerod}/{fksucu}', 'documentoSafact');
         Route::post('openDoc', 'documentoAjax');
     });
+
+    Route::get('/doc/buscar', [SafactController::class, 'buscarFactura'])->name('documento.buscar');
 
     Route::resource('instancias', \App\Http\Controllers\SainstaController::class);
     Route::controller(\App\Http\Controllers\SainstaController::class)->group(function () {
@@ -155,18 +166,49 @@ Route::middleware(['auth'])->group(function () {
         Route::match(['get','post'],'/clientes/{codclie?}/{tab?}', 'index')->name('buscarclientes');
     });
 
-    Route::controller(\App\Http\Controllers\SaacxcController::class)->group(function () {
+    Route::resource('proveedores', SaprovController::class);
+
+    Route::controller(SaacxcController::class)->group(function () {
         Route::match(['get','post'],'cxc/{id?}', 'saacxc')->name('saacxc');
         Route::post('/cxclist', 'cxclist');
         Route::post('/cxcabonarweb', 'cxcabonarweb');
+        Route::post('/cxc/clientes-por-sucursal', 'clientesPorSucursal');
+        Route::post('/cxcdescuento',  'aplicarDescuento')->name('cxcdescuento');
     });
 
-    Route::resource('proveedores', \App\Http\Controllers\SaprovController::class);
-    Route::controller(\App\Http\Controllers\SaprovController::class)->group(function () {
-        Route::get('saprov/json', 'json');
+    Route::post('proveedores/compras-historicas-producto', [SaprovController::class, 'comprasHistoricasProducto'])
+        ->name('proveedores.compras-historicas-producto');
+    Route::post('proveedores/compras-diarias-producto', [SaprovController::class, 'comprasDiariasProducto'])
+        ->name('proveedores.compras-diarias-producto');
+    Route::post('proveedores/ventas-diarias-producto', [SaprovController::class, 'ventasDiariasProducto'])
+        ->name('proveedores.ventas-diarias-producto');
+    Route::get('proveedores/cuentas-por-pagar/resumen-general', [SaprovController::class, 'getResumenGeneralCuentasPorPagar'])
+        ->name('proveedores.cuentas-por-pagar.resumen-general');
+    Route::post('/proveedores/producto/quick-update', [SaprovController::class, 'quickUpdateProducto'])
+        ->name('proveedores.producto.quick-update');
+    Route::get ('/proveedores/debug/{codprov}/{codprod}', [SaprovController::class, 'debug'])->name('proveedores.debug');
+
+    Route::get('/productos/{codprod}/datos-edit', [SaprodController::class, 'getDatosEdit'])
+        ->name('productos.datos-edit');
+    Route::post('/proveedores/buscarPredictivo', [SaprovController::class, 'buscarPredictivo'])->name('proveedores.buscarPredictivo');
+    Route::get ('/proveedores/{codprov}/productos-panel', [SaprovController::class, 'productosPanel'])->name('proveedores.productos-panel');
+    Route::post('/proveedores/{codprov}/productos-panel', [SaprovController::class, 'productosPanel'])->name('proveedores.productos-panel.post');
+    Route::get('proveedores/{codprov}/cuentas-por-pagar', [SaprovController::class, 'getCuentasPorPagar'])
+        ->name('proveedores.cuentas-por-pagar');
+
+
+    Route::controller(SaprovController::class)->group(function () {
+        Route::get ('saprov/json', 'json');
+        Route::match(['get','post'],'/proveedores/{codprov?}/{tab?}', 'index')->name('proveedores.index');
+        Route::post('proveedoresupdate', 'proveedoresupdate')->name('proveedoresupdate');
+        Route::post('/proveedores/marcar-pagado', 'marcarPagado')->name('proveedores.marcar-pagado');
     });
+
+    Route::get('proveedores/pagos/pendientes', [SaprovController::class, 'pagosPendientes'])->name('proveedores.pagos-pendientes');
+    Route::get('proveedores-json', [SaprovController::class, 'json'])->name('proveedores.json');
 
     Route::resource('productos', SaprodController::class);
+
     Route::controller(SaprodController::class)->group(function () {
         Route::post('saprod/listprodubiccompany', 'listprodubiccompany')->name('saprod.listprodubiccompany');
         Route::get('saprod/json', 'json');
@@ -182,6 +224,19 @@ Route::middleware(['auth'])->group(function () {
         Route::get( '/existencia/cauchos', 'existenciascauchos');
         Route::post( '/existencia/cauchos/modelos', 'existenciascauchosModelos');
         Route::get( '/existencia/cauchos/modelos/{inspadre}', 'existenciascauchosModelos');
+    });
+
+    Route::prefix('productos-imagenes')->name('productos.imagenes.')->group(function () {
+        Route::get('/{codprod}', [SaprodImagenController::class, 'getImagenes'])->name('get');
+        Route::get('/{codprod}/principal', [SaprodImagenController::class, 'getImagenPrincipal'])->name('get-principal');
+        Route::post('/upload', [SaprodImagenController::class, 'upload'])->name('upload');
+        Route::post('/upload-multiple', [SaprodImagenController::class, 'uploadMultiple'])->name('upload-multiple');
+        Route::delete('/{id}', [SaprodImagenController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/set-principal', [SaprodImagenController::class, 'setPrincipal'])->name('set-principal');
+        Route::post('/{id}/set-thumbnail', [SaprodImagenController::class, 'setThumbnail'])->name('set-thumbnail');
+        Route::post('/{id}/set-icono', [SaprodImagenController::class, 'setIcono'])->name('set-icono');
+        Route::put('/{id}/tipo', [SaprodImagenController::class, 'updateTipo'])->name('update-tipo'); // Ruta para cambiar tipo
+        Route::post('/update-order', [SaprodImagenController::class, 'updateOrder'])->name('update-order');
     });
 
     Route::resource('depositos', \App\Http\Controllers\SadepoController::class);

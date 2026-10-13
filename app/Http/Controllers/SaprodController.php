@@ -1295,79 +1295,171 @@ class SaprodController extends Controller
 
     public function viewprodinstsanciascodalte(Request $request)
     {
-        $comercial  = session('comercialid') ;
+        $comercial = session('comercialid');
         if(!$comercial) {
             session(['comercialid' => 1]);
             $comercial = 1;
         }
 
-        $codalte     = $request->codalte;
-        $busqueda    = $request->busqueda;
-        $len         = strlen($codalte);
+        $codalte  = $request->codalte;
+        $busqueda = $request->busqueda ?? '';
+        $len      = strlen($codalte);
 
-        $busqueda = str_replace("\"", "", $busqueda);
-        $busqueda = str_replace("'",  "", $busqueda);
-        $busqueda = str_replace("*", " ", $busqueda);
-        $vector = explode(" ", $busqueda);
+        // Obtener depósitos seleccionados
+        $depositosSeleccionados = $request->input('depositos', []);
+        if(is_string($depositosSeleccionados)) {
+            $depositosSeleccionados = json_decode($depositosSeleccionados, true) ?? [];
+        }
 
-        if ($vector ) {
-            $numerito = 0;
-            $cadena   = '';
-            foreach ($vector as $value) {
-                if ($numerito > 0) {
-                    $cadena  .= ' AND ';
+        // Obtener orden de depósitos
+        $ordenDepositos = $request->input('orden_depositos', []);
+        if(is_string($ordenDepositos)) {
+            $ordenDepositos = json_decode($ordenDepositos, true) ?? [];
+        }
+
+        // Construir búsqueda
+        $cadena = '';
+        if(!empty($busqueda)) {
+            $busqueda = str_replace("\"", "", $busqueda);
+            $busqueda = str_replace("'",  "", $busqueda);
+            $busqueda = str_replace("*", " ", $busqueda);
+            $vector = explode(" ", $busqueda);
+
+            if(!empty($vector)) {
+                $conditions = [];
+                foreach ($vector as $value) {
+                    if(trim($value) != '') {
+                        $conditions[] = "(a.codprod LIKE '%$value%' OR a.descrip LIKE '%$value%' OR a.refere LIKE '%$value%' OR a.marca LIKE '%$value%' OR a.descrip2 LIKE '%$value%')";
+                    }
                 }
-                $cadena  .= "(a.codprod like '%$value%' or a.descrip like '%$value%' or a.refere like '%$value%' or a.marca like '%$value%' or a.descrip2 like '%$value%')";
-                $numerito++;
+                if(!empty($conditions)) {
+                    $cadena = " AND (" . implode(' AND ', $conditions) . ") ";
+                }
             }
         }
 
-
-        if($cadena!='') $cadena = " and ($cadena) ";
-
-        $sqlcostoinv = "SELECT a.preciodant, a.preciodpro, a.preciod, a.descrip, a.codprod, e.codubic, b.existen, e.descrip as deposito
-								from saprod a , saexis b, sasucursal c, sainsta d, sadepo e
-								where a.codprod    = b.codprod
-                                and b.fk_sucursal  = c.id
-								and b.codubic      = e.codubic
-                                and c.fk_comercial = $comercial
-								and a.comercial    = $comercial
-								and d.comercial    = $comercial
-								and e.comercial    = $comercial
-								$cadena
-								and d.codinst      = a.codinst
-                                and left(d.codalte,$len) = '$codalte'
-								and b.existen <> 0
-                                order by a.descrip
-								";
+        // Consulta
+        $sqlcostoinv = "SELECT a.preciodant, a.preciodpro, a.preciod, a.descrip, a.descrip2,
+                           a.codprod, e.codubic, b.existen, e.descrip as deposito
+                    FROM saprod a
+                    INNER JOIN saexis b ON a.codprod = b.codprod
+                    INNER JOIN sasucursal c ON b.fk_sucursal = c.id
+                    INNER JOIN sainsta d ON d.codinst = a.codinst
+                    INNER JOIN sadepo e ON b.codubic = e.codubic
+                    WHERE c.fk_comercial = $comercial
+                      AND a.comercial = $comercial
+                      AND d.comercial = $comercial
+                      AND e.comercial = $comercial
+                      AND LEFT(d.codalte, $len) = '$codalte'
+                      AND b.existen <> 0
+                      $cadena
+                    ORDER BY a.descrip";
 
         $listado = DB::select($sqlcostoinv);
 
-        $productos    = [];
-        $deposito     = [];
-        $existencias  = [];
+        $productos   = [];
+        $deposito    = [];
+        $existencias = [];
 
         foreach($listado as $producto){
+            if(!isset($productos[$producto->codprod])) {
+                $productos[$producto->codprod] = [
+                    'descrip'    => $producto->descrip,
+                    'descrip2'   => $producto->descrip2,
+                    'preciodpro' => $producto->preciodpro,
+                    'preciod'    => $producto->preciod,
+                    'preciodant' => $producto->preciodant ?? 0,
+                ];
+            }
 
-            if(!isset($productos[$producto->codprod]))
-                $productos[$producto->codprod] = [];
+            if(!isset($deposito[$producto->codubic])) {
+                $deposito[$producto->codubic] = str_replace("SARA",'',$producto->deposito);
+            }
 
-            $productos[$producto->codprod]['descrip']    = $producto->descrip;
-            $productos[$producto->codprod]['preciodpro'] = $producto->preciodpro;
-            $productos[$producto->codprod]['preciod']    = $producto->preciod;
-
-            if(!isset($deposito[$producto->codubic]))
-                $deposito[$producto->codubic] = $producto->deposito;
-
-            if(!isset($existencias[$producto->codprod][$producto->codubic]))
-                $existencias[$producto->codprod][$producto->codubic] = 0;
-
+            if(!isset($existencias[$producto->codprod])) {
+                $existencias[$producto->codprod] = [];
+            }
             $existencias[$producto->codprod][$producto->codubic] = $producto->existen;
         }
 
-        return view('productosallinstsancias', compact('productos', 'deposito', 'existencias') )->render();
+        // ==========================================
+        // APLICAR ORDEN PERSONALIZADO
+        // ==========================================
+        if(!empty($ordenDepositos)) {
+            $depositoOrdenado = [];
+            foreach($ordenDepositos as $key) {
+                if(isset($deposito[$key])) {
+                    $depositoOrdenado[$key] = $deposito[$key];
+                }
+            }
+            // Agregar los que no estaban en el orden
+            foreach($deposito as $key => $nombre) {
+                if(!isset($depositoOrdenado[$key])) {
+                    $depositoOrdenado[$key] = $nombre;
+                }
+            }
+            $deposito = $depositoOrdenado;
+        }
 
+        // ==========================================
+        // FILTRAR DEPÓSITOS SELECCIONADOS
+        // ==========================================
+        $depositosFiltrados = [];
+        $existenciasFiltradas = [];
 
+        if(!empty($depositosSeleccionados)) {
+            foreach($deposito as $key => $nombre) {
+                if(in_array($key, $depositosSeleccionados)) {
+                    $depositosFiltrados[$key] = $nombre;
+                }
+            }
+
+            foreach($existencias as $codprod => $depositosProd) {
+                $existenciasFiltradas[$codprod] = [];
+                foreach($depositosProd as $depKey => $cantidad) {
+                    if(in_array($depKey, $depositosSeleccionados)) {
+                        $existenciasFiltradas[$codprod][$depKey] = $cantidad;
+                    }
+                }
+            }
+        } else {
+            $depositosFiltrados = $deposito;
+            $existenciasFiltradas = $existencias;
+        }
+
+        // ==========================================
+        // REINDEXAR DEPÓSITOS
+        // ==========================================
+        $depositoValues = array_values($depositosFiltrados);
+        $depositoKeys = array_keys($depositosFiltrados);
+
+        // Calcular totales
+        $totalcost = 0;
+        $existdepstt = 0;
+        foreach($productos as $codprod => $producto) {
+            if(isset($existenciasFiltradas[$codprod])) {
+                foreach($existenciasFiltradas[$codprod] as $cantidad) {
+                    $totalcost += $cantidad * ($producto['preciodpro'] ?? 0);
+                    $existdepstt += $cantidad;
+                }
+            }
+        }
+
+        return view('productosallinstsancias', compact(
+            'productos',
+            'deposito',              // Original (todos, pero ordenados)
+            'depositoKeys',          // Keys filtrados
+            'depositoValues',        // Valores filtrados
+            'existenciasFiltradas',
+            'existencias',
+            'depositosFiltrados',
+            'totalcost',
+            'existdepstt',
+            'depositosSeleccionados',
+            'codalte',
+            'busqueda',
+            'ordenDepositos'         // Para mantener el orden
+        ));
     }
 
     public function listprodubic(Request $request)
@@ -1487,101 +1579,44 @@ class SaprodController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'codinst' => 'required|exists:sainsta,codinst',
-            'codprod' => 'required|max:15|regex:/^[a-zA-Z0-9\-]+$/',
-            'descrip' => 'required|string|max:255',
+            'codinst' => 'required',
+            'codprod' => 'required|unique:saprod,codprod,NULL,id,codinst,' . $request->codinst,
+            'descrip' => 'required',
         ], [
-            'codinst.required' => 'Por favor, seleccione una instancia del inventario',
-            'codinst.exists' => 'La instancia seleccionada no es válida',
-            'codprod.required' => 'Por favor, ingrese el código del producto',
-            'codprod.regex' => 'El código solo puede contener letras, números y guiones',
-            'codprod.max' => 'El código no puede tener más de 15 caracteres',
-            'descrip.required' => 'Por favor, ingrese el nombre/descripción del producto',
+            'codprod.unique' => 'El código ya existe en esta instancia',
         ]);
 
         try {
-            $comercialId = session('comercialid');
 
-            if (!$comercialId) {
-                $comercialId = 1;
-                session(['comercialid' => 1]);
-            }
+            $comercial = session('comercialid') ;
 
-            $comercial = Sacomercial::find($comercialId);
+            $comercial    = Sacomercial::find($comercial);
+            $match        = $comercial->match;
 
-            if (!$comercial) {
-                throw new \Exception('Comercial no encontrado');
-            }
+            $comerciales = Sacomercial::where('match',$match)->get();
 
-            $match = $comercial->match;
-
-            // Check if product code already exists in this commercial group
-            $exists = Saprod::where('codprod', $request->codprod)
-                ->whereIn('comercial', function($query) use ($match) {
-                    $query->select('id')
-                        ->from('sacomercial')
-                        ->where('match', $match);
-                })
-                ->exists();
-
-            if ($exists) {
-                return back()
-                    ->withErrors(['codprod' => 'El código ya existe en el inventario'])
-                    ->withInput();
-            }
-
-            $comerciales = Sacomercial::where('match', $match)->get();
-
-            if ($comerciales->isEmpty()) {
-                throw new \Exception('No se encontraron comerciales para crear el producto');
-            }
-
-            $productosCreados = 0;
-
-            foreach ($comerciales as $comercial) {
+            foreach ($comerciales as $comercial){
                 $newprod = new Saprod();
-                $newprod->codinst = $request->codinst;
-                $newprod->codprod = strtoupper(substr($request->codprod, 0, 15));
-                $newprod->descrip = $request->descrip;
-                $newprod->descrip2 = $request->descrip2 ?? null;
-                $newprod->descrip3 = $request->descrip3 ?? null;
-                $newprod->marca = $request->marca ?? null;
-                $newprod->unidad = $request->unidad ?? null;
-                $newprod->refere = $request->refere ?? null;
-                $newprod->observaciones = $request->observaciones ?? null;
+                $newprod->fill($request->all());
+                $newprod->codprod   = substr($request->codprod,0,15);
 
-                // Set prices
-                $newprod->preciodant = 0;
-                $newprod->preciod = $request->preciodpro ?? 0;
-                $newprod->preciodpro = $request->preciodpro ?? 0;
-                $newprod->costod = $request->costod3 ?? 0;
-                $newprod->costod2 = $request->costod3 ?? 0;
-                $newprod->costod3 = $request->costod3 ?? 0;
-
-                $newprod->activo = $request->activo ?? 1;
+                if(isset($request->preciodpro) and $request->preciodpro >0) {
+                    $newprod->preciodant  = 0;
+                    $newprod->preciod     = $request->preciodpro;
+                    $newprod->preciodpro  = $request->preciodpro;
+                }
+                if(isset($request->costod3) and $request->costod3 >0) {
+                    $newprod->costod  = $request->costod3;
+                    $newprod->costod2 = $request->costod3;
+                    $newprod->costod3 = $request->costod3;
+                }
                 $newprod->comercial = $comercial->id;
-
-                $newprod->esexento = 1;
-
                 $newprod->save();
-                $productosCreados++;
             }
-
-            // Mensaje de éxito con detalles
-            $mensaje = "Producto '{$request->descrip}' creado exitosamente";
-            if ($productosCreados > 1) {
-                $mensaje .= " en {$productosCreados} comerciales";
-            }
-
-            return redirect()->route('productos.index')
-                ->with('success', $mensaje);
+            return redirect()->route('productos.index');
 
         } catch (\Exception $e) {
-            \Log::error('Error al crear producto: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
-
-            return back()
-                ->withErrors(['error' => 'Error al crear el producto: ' . $e->getMessage()])
+            return back()->withErrors(['error' => 'Error al crear el producto: ' . $e->getMessage()])
                 ->withInput();
         }
     }
@@ -1770,5 +1805,47 @@ class SaprodController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Obtener datos del producto para edición rápida
+     */
+    public function getDatosEdit($codprod)
+    {
+        $comercial = session('comercialid') ?: 1;
+
+        $producto = Saprod::where('codprod', $codprod)
+            ->where('comercial', $comercial)
+            ->first();
+
+        if (!$producto) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Producto no encontrado'
+            ], 404);
+        }
+
+        // Obtener instancia
+        $instancia = Sainsta::where('codinst', $producto->codinst)
+            ->where('comercial', $comercial)
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'producto' => [
+                'id'         => $producto->id,
+                'codprod'    => $producto->codprod,
+                'descrip'    => $producto->descrip,
+                'refere'     => $producto->refere,
+                'marca'      => $producto->marca,
+                'preciodant' => $producto->preciodant ?? 0,
+                'preciodpro' => $producto->preciodpro ?? 0,
+                'preciod'    => $producto->preciod ?? 0,
+                'costod'     => $producto->costod ?? 0,
+                'costod2'    => $producto->costod2 ?? 0,
+                'costod3'    => $producto->costod3 ?? 0,
+                'instancia_descrip' => $instancia ? $instancia->descrip : 'Sin instancia'
+            ]
+        ]);
     }
 }
