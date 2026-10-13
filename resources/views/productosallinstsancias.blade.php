@@ -573,9 +573,6 @@
                         <td align="right" class="nombre-prod-modal">{{ number_format($producto['preciodpro'],2,',','.') ?? '' }}</td>
                         <td align="right" class="nombre-prod-modal">{{ number_format($producto['preciod'],2,',','.')    ?? '' }}</td>
                         <td align="right" class="nombre-prod-modal">{{ number_format($producto['costod3'],2,',','.')    ?? '' }}</td>
-                        <td align="left" class="descrip2-prod-modal">
-                            {{ $producto['descrip2'] ?? '-' }}
-                        </td>
 
                         @foreach($depositoKeys as $depIndex => $depKey)
                             @php
