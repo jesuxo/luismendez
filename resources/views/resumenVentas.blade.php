@@ -488,54 +488,102 @@
                     </div>
                 </div>
             </div>
-            <div class="card"  data-simplebar  style="height: 269px; background-color: #fafafa;  border: 1px solid #0072c5;">
-                @if(isset($jesusus))
-                <div class="card-body mt-4"   >
+            <div class="card"   data-simplebar  style="height: 269px; background-color: #fafafa;  border: 1px solid #0072c5;">
+                <div class="card" data-simplebar style="height: 269px; background-color: #fafafa; border: 1px solid #0072c5;">
+                    <div class="card-header bg-primary text-white py-2">
+                        <h6 class="card-title mb-0">
+                            <i class="bi bi-trophy me-2"></i>VENDEDORES DESTACADOS
+                        </h6>
+                    </div>
+                    <div class="card-body p-2" id="vendedoresDestacados">
+                        @if(isset($vendedoresDestacados) && count($vendedoresDestacados) > 0)
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0" style="font-size: 0.8rem;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start">Vendedor</th>
+                                        <th class="text-end" style="min-width: 70px;">Contado</th>
+                                        <th class="text-end" style="min-width: 70px;">Crédito</th>
+                                        <th class="text-end" style="min-width: 70px;">Cobranza</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @php
+                                        // Calcular el máximo de venta, pero si es 0, usar 1 para evitar división por cero
+                                       $maxVenta = 0;
+                                       foreach($vendedoresDestacados as $vendedor) {
+                                           if($vendedor['total_venta'] > $maxVenta) {
+                                               $maxVenta = $vendedor['total_venta'];
+                                           }
+                                       }
+                                       // Si el máximo es 0, establecerlo a 1 para evitar división por cero
+                                       if($maxVenta == 0) {
+                                           $maxVenta = 1;
+                                       }
+                                    @endphp
+                                    @foreach($vendedoresDestacados as $index => $vendedor)
+                                        @php
+                                            $porcentaje = ($vendedor['total_venta'] / $maxVenta) * 100;
+                                            $medalla = '';
+                                            if($index == 0) $medalla = '🥇';
+                                            elseif($index == 1) $medalla = '🥈';
+                                            elseif($index == 2) $medalla = '🥉';
+                                        @endphp
+                                        <tr>
+                                            <td class="text-start">
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <span class="fw-bold">{{ $medalla }}</span>
+                                                    <span class="fw-medium">{{ $vendedor['nombre'] }}</span>
 
-                    @if(isset($clases))
-                        <div class="table-responsive table-card  "  >
-                            <table class="table table-borderless table-striped align-middle table-sm fs-14 mb-0">
-                                <thead class="text-muted table-light">
-                                <tr>
-                                    <th width="30%"   class="tdlineff">  Clasificaci&oacute;n  </th>
-                                    <th  width="20%"  class="tdlineff" style="text-align: right !important; cursor:pointer;" align="right" onclick="loadingreport('/reporte/instpagobs')"><i class="bi bi-link"></i> Monto (BS)</th>
-                                    <th  width="20%"  class="tdlineff" style="text-align: right !important; cursor:pointer;" align="right" onclick="loadingreport('/reporte/instpagodolares')"><i class="bi bi-link"></i> Monto (USD)</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @php
-                                    $tbs  = 0;
-                                    $usd = 0;
-                                @endphp
-                                @if(isset($clases))
-                                    @foreach($clases as $index => $clase)
-                                        @if($index  !='')
-                                            @php
-                                                $tbs  += ( isset($listado[$index])    and $listado[$index]  >0)? $listado[$index]: 0;
-                                                $usd  += ( isset($listadousd[$index]) and $listadousd[$index]  >0)? $listadousd[$index]: 0;
-                                            @endphp
-                                            <tr>
-                                                <td align="left"> {{$index}}</td>
-                                                <td align="right">   {{ (isset($listado[$index]))? ' '.number_format($listado[$index],2,',','.'):''  }}  </td>
-                                                <td align="right">   {{ (isset($listadousd[$index]))? '$ '.number_format($listadousd[$index],2,',','.'):''  }} </td>
-                                            </tr>
-                                        @endif
+                                                </div>
+                                                <div class="progress" style="height: 3px; margin-top: 2px;">
+                                                    <div class="progress-bar bg-success"
+                                                         role="progressbar"
+                                                         style="width: {{ $porcentaje }}%;"
+                                                         aria-valuenow="{{ $porcentaje }}"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100">
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-end text-success fw-bold">
+                                                $ {{ number_format($vendedor['venta_contado'], 2, ',', '.') }}
+                                            </td>
+                                            <td class="text-end text-warning fw-bold">
+                                                $ {{ number_format($vendedor['venta_credito'], 2, ',', '.') }}
+                                            </td>
+                                            <td class="text-end text-primary fw-bold">
+                                                $ {{ number_format($vendedor['total_cobranza'], 2, ',', '.') }}
+                                            </td>
+                                        </tr>
                                     @endforeach
-                                @endif
-                                <tr>
-                                    <td class="tdlineff">   </td>
-                                    <td align="right" class="tdlineff">  {{  (isset($tbs) and $tbs >0)? number_format($tbs ,2,',','.'): ''  }}  </td>
-                                    <td align="right" class="tdlineff">  {{  (isset($tbs) and $tbs >0)?'$ '.number_format($usd ,2,',','.') : ''  }}  </td>
-                                </tr>
-                                </tbody>
-                                <!-- Totales de métodos de pago agregados -->
-
-                            </table>
-                        </div>
-                    @endif
-
+                                    </tbody>
+                                    <tfoot class="table-light">
+                                    <tr class="fw-bold">
+                                        <td class="text-end">TOTALES:</td>
+                                        <td class="text-end text-success">
+                                            $ {{ number_format(array_sum(array_column($vendedoresDestacados, 'venta_contado')), 2, ',', '.') }}
+                                        </td>
+                                        <td class="text-end text-warning">
+                                            $ {{ number_format(array_sum(array_column($vendedoresDestacados, 'venta_credito')), 2, ',', '.') }}
+                                        </td>
+                                        <td class="text-end text-primary">
+                                            $ {{ number_format(array_sum(array_column($vendedoresDestacados, 'total_cobranza')), 2, ',', '.') }}
+                                        </td>
+                                    </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-person-x display-4 d-block mb-2"></i>
+                                <p class="mb-0">No hay vendedores destacados en este periodo</p>
+                                <small>Configure vendedores destacados en el sistema</small>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                @endif
+
             </div>
         </div>
 

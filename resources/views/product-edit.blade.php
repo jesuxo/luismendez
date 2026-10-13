@@ -94,27 +94,12 @@
                             </div>
                             <div class="flex-grow-1">
                                 <h5 class="card-title mb-1 ">Informaci&oacute;n</h5>
-                                <p class="text-muted mb-0">Ingrese/Modifique los datos del producto.</p>
+                                <p class="text-muted mb-0">Modifique los datos del producto.</p>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3" style="display:none !important;">
-                            <label class="form-label">Product description</label>
 
-                            <div id="ckeditor-classic">
-                                <p>Tommy Hilfiger men striped pink sweatshirt. Crafted with cotton. Material composition is
-                                    100% organic cotton. This is one of the world’s leading designer lifestyle brands and is
-                                    internationally recognized for celebrating the essence of classic American cool style,
-                                    featuring preppy with a twist designs.</p>
-                                <ul>
-                                    <li>Full Sleeve</li>
-                                    <li>Cotton</li>
-                                    <li>All Sizes available</li>
-                                    <li>4 Different Color</li>
-                                </ul>
-                            </div>
-                        </div>
                         <div>
                             <div class="d-flex align-items-start">
                                 <div class="flex-grow-1">
@@ -152,7 +137,7 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="refere">Referencia</label>
                                     <input type="text" class="form-control" id="refere" name="refere"  value="{{$producto->refere}}"
-                                           placeholder="Ej: C&oacute;digo Barra">
+                                           maxlength="40"   placeholder="Ej: C&oacute;digo Barra">
                                 </div>
                             </div>
                         </div>
@@ -165,25 +150,25 @@
 
                             <input type="text" class="form-control d-none" id="product-id-input">
 
-                            <input type="text" class="form-control" id="descrip" value="{{$producto->descrip}}"
+                            <input type="text" class="form-control" id="descrip" value="{{$producto->descrip}}" maxlength="40"
                                    placeholder="Descripcion principal" name="descrip" required>
                             <div class="invalid-feedback">Por favor, ingrese el nombre/descripci&oacute;n del producto</div>
                         </div>
 
                         <div class="mb-3">
-                            <input type="text" class="form-control" id="descrip2" name="descrip2"   value="{{$producto->descrip2}}"
+                            <input type="text" class="form-control" id="descrip2" name="descrip2"  maxlength="40"  value="{{$producto->descrip2}}"
                                    placeholder="Descripci&oacute;n 2" >
                         </div>
 
                         <div class="mb-3">
-                            <input type="text" class="form-control" id="descrip3" name="descrip3"  value="{{$producto->descrip3}}"
+                            <input type="text" class="form-control" id="descrip3" name="descrip3"  maxlength="40" value="{{$producto->descrip3}}"
                                    placeholder="Descripci&oacute;n 3" >
                         </div>
                         <div class="row ">
                             <div class="col-lg-6">
                                 <div class="mb-3">
                                     <label class="form-label" for="marca">Marca</label>
-                                    <input type="text" class="form-control" id="marca"  value="{{$producto->marca}}" name="marca"
+                                    <input type="text" class="form-control" id="marca"  maxlength="20" value="{{$producto->marca}}" name="marca"
                                            placeholder="Ej: POLAR">
                                 </div>
                             </div>
@@ -191,7 +176,7 @@
                                 <div class="mb-3">
                                     <label class="form-label" for="unidad">Unidad de medida</label>
                                     <input type="text" class="form-control" id="unidad" name="unidad"value="{{$producto->unidad}}"
-                                           placeholder="Ej: Kg">
+                                           maxlength="3"      placeholder="Ej: Kg">
                                 </div>
                             </div>
                         </div>
@@ -301,7 +286,43 @@
             </div>
         </div>
     </form>
+    <div class="card mt-3">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Imágenes del Producto</h5>
+                <button type="button" class="btn btn-primary btn-sm" id="btnAgregarImagenes">
+                    <i class="bi bi-plus-circle"></i> Agregar Imágenes
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Drop zone para subir imágenes -->
+            <div class="dropzone-wrapper mb-3" id="dropzoneWrapper">
+                <div class="dropzone-area" id="dropzoneArea">
+                    <div class="text-center">
+                        <i class="bi bi-cloud-upload" style="font-size: 48px;"></i>
+                        <h5>Arrastra y suelta imágenes aquí</h5>
+                        <p class="text-muted">o haz clic para seleccionar archivos</p>
+                        <p class="text-muted small">Formatos: JPG, PNG, GIF, WebP (max 5MB)</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                </div>
+            </div>
 
+            <!-- Galería de imágenes -->
+            <div id="galeriaImagenes" class="row g-3">
+                <!-- Aquí se cargarán las imágenes vía JavaScript -->
+            </div>
+
+            <!-- Barra de progreso -->
+            <div id="progressBar" style="display: none;" class="mt-3">
+                <div class="progress">
+                    <div id="progressBarInner" class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" style="width: 0%">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
@@ -312,4 +333,516 @@
     <!-- App js -->
     <script src="{{ URL::asset('build/js/app.js') }}"></script>
 
+    <script> $(document).ready(function() {
+            const codprod = $('#codprod').val();
+            const dropzoneArea = $('#dropzoneArea');
+            const fileInput = $('#fileInput');
+            const galeria = $('#galeriaImagenes');
+            const progressBar = $('#progressBar');
+            const progressBarInner = $('#progressBarInner');
+            const urlBase = '/productos-imagenes';
+
+            let cargando = false;
+            let cargandoImagenes = false; // Nuevo flag para controlar carga de imágenes
+
+            // Cargar imágenes existentes
+            cargarImagenes();
+
+            // Eventos de dropzone
+            dropzoneArea.on('click', function(e) {
+                // Evitar que el click se propague al input file si ya estamos en él
+                if (!$(e.target).closest('#fileInput').length) {
+                    fileInput.click();
+                }
+            });
+
+            dropzoneArea.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
+            });
+
+            dropzoneArea.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+            });
+
+            dropzoneArea.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation(); // IMPORTANTE: evitar propagación
+                $(this).removeClass('dragover');
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    subirImagenes(files);
+                }
+            });
+
+            // Manejar el cambio del input file con control de recursión
+            fileInput.on('change', function(e) {
+                // Prevenir múltiples disparos
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (this.files && this.files.length > 0) {
+                    // Guardar referencia a los archivos
+                    const files = this.files;
+
+                    // IMPORTANTE: Resetear el input ANTES de procesar para evitar loops
+                    // Usar setTimeout para que el reset no interfiera con el event loop
+                    const inputElement = this;
+                    setTimeout(function() {
+                        inputElement.value = '';
+                    }, 10);
+
+                    subirImagenes(files);
+                }
+            });
+
+            $('#btnAgregarImagenes').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                fileInput.click();
+            });
+
+            // ============================================
+            // EVENT DELEGATION - Los eventos se mantienen
+            // incluso después de recargar la galería
+            // ============================================
+
+            // Evento para establecer como principal
+            $(document).on('click', '.set-principal', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setPrincipal(id);
+                }
+            });
+
+            // Evento para establecer como thumbnail
+            $(document).on('click', '.set-thumbnail', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setThumbnail(id);
+                }
+            });
+
+            // Evento para establecer como icono
+            $(document).on('click', '.set-icono', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    setIcono(id);
+                }
+            });
+
+            // Evento para eliminar imagen
+            $(document).on('click', '.eliminar-imagen', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                if (id) {
+                    Swal.fire({
+                        title: '¿Estás seguro?',
+                        text: "Esta acción no se puede deshacer",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Sí, eliminar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            eliminarImagen(id);
+                        }
+                    });
+                }
+            });
+
+            // ============================================
+            // FUNCIONES
+            // ============================================
+
+            function cargarImagenes() {
+                // Prevenir múltiples llamadas simultáneas
+                if (cargandoImagenes) {
+                    return;
+                }
+                cargandoImagenes = true;
+
+                $.ajax({
+                    url: urlBase + '/' + codprod,
+                    type: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            renderizarGaleria(response);
+                        }
+                        cargandoImagenes = false;
+                    },
+                    error: function(xhr) {
+                        console.error('Error al cargar imágenes:', xhr);
+                        mostrarError('Error al cargar las imágenes');
+                        cargandoImagenes = false;
+                    }
+                });
+            }
+
+            function renderizarGaleria(data) {
+                // Limpiar la galería de manera segura
+                const galeriaElement = galeria[0];
+                if (galeriaElement) {
+                    galeriaElement.innerHTML = '';
+                }
+
+                if (!data.imagenes || data.imagenes.length === 0) {
+                    galeria.html(`
+                <div class="col-12 text-center text-muted py-4">
+                    <i class="bi bi-image" style="font-size: 48px;"></i>
+                    <p>No hay imágenes para este producto</p>
+                </div>
+            `);
+                    return;
+                }
+
+                // Construir HTML de manera eficiente
+                let html = '';
+                data.imagenes.forEach(function(imagen) {
+                    const esPrincipal = imagen.tipo === 'principal' && imagen.activo === 1;
+                    const esThumbnail = imagen.tipo === 'thumbnail' && imagen.activo === 1;
+                    const esIcono = imagen.tipo === 'icono' && imagen.activo === 1;
+
+                    let badges = '';
+                    if (esPrincipal) badges += '<span class="badge bg-success me-1">Principal</span>';
+                    if (esThumbnail) badges += '<span class="badge bg-info me-1">Thumbnail</span>';
+                    if (esIcono) badges += '<span class="badge bg-warning me-1">Icono</span>';
+                    if (!esPrincipal && !esThumbnail && !esIcono && imagen.tipo === 'secundaria') {
+                        badges += '<span class="badge bg-secondary me-1">Secundaria</span>';
+                    }
+
+                    let botones = '';
+
+                    if (!esPrincipal) {
+                        botones += `<button class="btn btn-sm btn-success set-principal" data-id="${imagen.id}" title="Establecer como principal">
+                    <i class="bi bi-star"></i>
+                </button>`;
+                    } else {
+                        botones += `<button class="btn btn-sm btn-outline-success" disabled title="Ya es principal">
+                    <i class="bi bi-star-fill"></i>
+                </button>`;
+                    }
+
+                    if (!esPrincipal && !esThumbnail) {
+                        botones += `<button class="btn btn-sm btn-info set-thumbnail" data-id="${imagen.id}" title="Establecer como thumbnail">
+                    <i class="bi bi-image"></i>
+                </button>`;
+                    } else if (esThumbnail) {
+                        botones += `<button class="btn btn-sm btn-outline-info" disabled title="Ya es thumbnail">
+                    <i class="bi bi-image-fill"></i>
+                </button>`;
+                    }
+
+                    if (!esPrincipal && !esIcono) {
+                        botones += `<button class="btn btn-sm btn-warning set-icono" data-id="${imagen.id}" title="Establecer como icono">
+                    <i class="bi bi-square"></i>
+                </button>`;
+                    } else if (esIcono) {
+                        botones += `<button class="btn btn-sm btn-outline-warning" disabled title="Ya es icono">
+                    <i class="bi bi-square-fill"></i>
+                </button>`;
+                    }
+
+                    botones += `<button class="btn btn-sm btn-danger eliminar-imagen" data-id="${imagen.id}" title="Eliminar">
+                <i class="bi bi-trash"></i>
+            </button>`;
+
+                    html += `
+                <div class="col-md-3 col-sm-4 col-6 galeria-imagen">
+                    <div class="imagen-card">
+                        <img src="/${imagen.ruta}" alt="${imagen.nombre_original}" loading="lazy"
+                             onerror="this.src='{{ asset('images/no-image.png') }}'">
+                        ${badges ? `<div class="badge-tipo">${badges}</div>` : ''}
+                        <div class="acciones">
+                            ${botones}
+                        </div>
+                        ${imagen.orden !== undefined ? `<small class="text-muted d-block text-center">Orden: ${imagen.orden}</small>` : ''}
+                    </div>
+                </div>
+            `;
+                });
+
+                galeria.html(html);
+
+                // Actualizar el contador de imágenes
+                const totalActivas = data.imagenes.filter(img => img.activo === 1).length;
+                $('.card-header .card-title').each(function() {
+                    const text = $(this).text();
+                    if (text.includes('Imágenes del Producto')) {
+                        $(this).text(`Imágenes del Producto (${totalActivas})`);
+                    }
+                });
+            }
+
+            function subirImagenes(files) {
+                // Validar cantidad de archivos
+                if (files.length > 10) {
+                    mostrarError('Solo puedes subir máximo 10 imágenes a la vez');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('codprod', codprod);
+
+                let archivosValidos = 0;
+                $.each(files, function(index, file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                        mostrarError(`El archivo ${file.name} excede el tamaño máximo de 5MB`);
+                        return;
+                    }
+                    formData.append('imagenes[]', file);
+                    archivosValidos++;
+                });
+
+                if (archivosValidos === 0) {
+                    return;
+                }
+
+                progressBar.show();
+                progressBarInner.css('width', '0%');
+                progressBarInner.text('0%');
+
+                $.ajax({
+                    url: urlBase + '/upload-multiple',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    contentType: false,
+                    xhr: function() {
+                        const xhr = new XMLHttpRequest();
+                        xhr.upload.addEventListener('progress', function(e) {
+                            if (e.lengthComputable) {
+                                const percent = Math.round((e.loaded / e.total) * 100);
+                                progressBarInner.css('width', percent + '%');
+                                progressBarInner.text(percent + '%');
+                            }
+                        });
+                        return xhr;
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            progressBarInner.css('width', '100%');
+                            progressBarInner.text('100%');
+                            setTimeout(() => {
+                                progressBar.hide();
+                                progressBarInner.css('width', '0%');
+                            }, 1500);
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+
+                            cargarImagenes();
+                        } else {
+                            progressBar.hide();
+                            if (response.errores && response.errores.length > 0) {
+                                mostrarError('Errores: ' + response.errores.join(', '));
+                            } else {
+                                mostrarError('Error al subir las imágenes');
+                            }
+                        }
+                    },
+                    error: function(xhr) {
+                        progressBar.hide();
+                        let mensaje = 'Error al subir las imágenes';
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            const errores = Object.values(xhr.responseJSON.errors).flat();
+                            mensaje = errores.join(', ');
+                        }
+                        mostrarError(mensaje);
+                    }
+                });
+            }
+
+            function setPrincipal(id) {
+                Swal.fire({
+                    title: 'Actualizando...',
+                    text: 'Estableciendo imagen como principal',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: urlBase + '/' + id + '/set-principal',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            cargarImagenes();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        console.error('Error:', xhr);
+                        let mensaje = 'Error al establecer como principal';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            mensaje = xhr.responseJSON.error;
+                        }
+                        mostrarError(mensaje);
+                    }
+                });
+            }
+
+            function setThumbnail(id) {
+                Swal.fire({
+                    title: 'Actualizando...',
+                    text: 'Estableciendo imagen como thumbnail',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: urlBase + '/' + id + '/set-thumbnail',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            cargarImagenes();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        console.error('Error:', xhr);
+                        let mensaje = 'Error al establecer como thumbnail';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            mensaje = xhr.responseJSON.error;
+                        }
+                        mostrarError(mensaje);
+                    }
+                });
+            }
+
+            function setIcono(id) {
+                Swal.fire({
+                    title: 'Actualizando...',
+                    text: 'Estableciendo imagen como icono',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: urlBase + '/' + id + '/set-icono',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            cargarImagenes();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        console.error('Error:', xhr);
+                        let mensaje = 'Error al establecer como icono';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            mensaje = xhr.responseJSON.error;
+                        }
+                        mostrarError(mensaje);
+                    }
+                });
+            }
+
+            function eliminarImagen(id) {
+                Swal.fire({
+                    title: 'Eliminando...',
+                    text: 'Por favor espera',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: urlBase + '/' + id,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.close();
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Eliminado',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            cargarImagenes();
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.close();
+                        console.error('Error:', xhr);
+                        let mensaje = 'Error al eliminar la imagen';
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            mensaje = xhr.responseJSON.error;
+                        }
+                        mostrarError(mensaje);
+                    }
+                });
+            }
+
+            function mostrarError(mensaje) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensaje,
+                    timer: 3000,
+                    showConfirmButton: true
+                });
+            }
+        });
+    </script>
 @endsection

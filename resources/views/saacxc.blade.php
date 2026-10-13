@@ -311,11 +311,25 @@
                     <div class="card-body p-0">
                         @php
                             // Obtener últimos procesos de cobranza (tipo 99) y descuentos (tipo 98) de la sucursal seleccionada
-                            $movimientosRecientes = \App\Models\Saacxc::with(['cliente'])
+                            $registrosRecientes = \App\Models\Saacxc::with(['cliente'])
                                 ->whereIn('tipocxc', [98, 99])
                                 ->orderBy('created_at', 'desc')
-                                ->limit(10)
+                                ->limit(50) // traer más para agrupar
                                 ->get();
+
+                            $movimientosRecientes = $registrosRecientes
+                                ->groupBy(function ($item) {
+                                    return $item->codclie . '|' . \Carbon\Carbon::parse($item->created_at)->format('Y-m-d H:i:s');
+                                })
+                                ->map(function ($grupo) {
+                                    $primero = $grupo->first();
+                                    $primero->monto_total_grupo   = $grupo->sum('montodolares');
+                                    $primero->cantidad_sucursales = $grupo->count();
+                                    $primero->es_grupo            = $grupo->count() > 1;
+                                    return $primero;
+                                })
+                                ->take(10)
+                                ->values();
 
                         @endphp
 
@@ -326,37 +340,44 @@
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div class="flex-grow-1">
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <span class="  small">
+                                                    <span class="small">
                                                         {{ $movimiento->cliente->descrip ?? 'N/A' }}
                                                     </span>
+                                                    @if($movimiento->es_grupo ?? false)
+                                                        <span class="badge bg-info" style="font-size: 0.65rem;">
+                                                            <i class="bi bi-diagram-3"></i> {{ $movimiento->cantidad_sucursales }} sucursales
+                                                        </span>
+                                                    @endif
                                                 </div>
                                                 <div class="mt-1">
                                                     <span class="text-muted small">
                                                         Monto {{ ($movimiento->TipoCxc == 99)? "Pago" : "Desc" }}:
-                                                        <span class=" text-primary">
-                                                            ${{ number_format(abs($movimiento->montodolares), 2, ',', '.') }}
+                                                        <span class="text-primary fw-bold">
+                                                            ${{ number_format($movimiento->monto_total_grupo ?? abs($movimiento->montodolares), 2, ',', '.') }}
                                                         </span>
                                                     </span>
                                                     <span class="text-muted small ms-2">
                                                         {{ \Carbon\Carbon::parse($movimiento->created_at)->format('d/m/Y H:i') }}
                                                     </span>
-                                                    <br>
-                                                    Observacion: {{$movimiento->Document}} {{$movimiento->Notas1}}
                                                 </div>
-                                                @if($movimiento->document && $movimiento->document != '')
-                                                    <div class="small text-muted mt-1">
-                                                        <i class="bi bi-chat-text"></i> {{ \Illuminate\Support\Str::limit($movimiento->document, 50) }}
-                                                    </div>
-                                                @endif
+                                                <div style="text-align: left" class="small text-muted">
+                                                    {{$movimiento->Document}}
+                                                </div>
                                             </div>
-                                            <div class="ms-2">
+                                            <div class="ms-2 d-flex flex-column gap-1">
                                                 <span class="badge {{ $movimiento->descargar == 1 ? 'bg-warning text-white' : 'bg-success text-white' }}">
-                                                    @if($movimiento->TipoCxc == 99)
-                                                        Pago   {!!  $movimiento->descargar == 1 ? 'Pend' : '&radic;'  !!}
-                                                    @else
-                                                        Desc   {!!  $movimiento->descargar == 1 ? 'Pend' : '&radic;'  !!}
-                                                    @endif
+                                                    {{ $movimiento->TipoCxc == 99 ? 'Pago' : 'Desc' }}
+                                                    {!! $movimiento->descargar == 1 ? 'Pend' : '&radic;' !!}
                                                 </span>
+                                                @if($movimiento->es_grupo ?? false)
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-primary btn-ver-grupo"
+                                                            data-codclie="{{ $movimiento->cliente->codclie }}"
+                                                            data-fecha="{{ \Carbon\Carbon::parse($movimiento->created_at)->format('Y-m-d H:i:s') }}"
+                                                            data-cliente="{{ $movimiento->cliente->descrip ?? '' }}">
+                                                        <i class="bi bi-eye"></i> Ver
+                                                    </button>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -554,8 +575,8 @@
                         <div class="card-body">
                             <div class="row g-3">
                                 @foreach($cxcprocesos as $proceso)
-                                    <div class="col-md-6"   >
-                                        <div class="card card-proceso border-{{($proceso->descargar == 1)? 'warning' : 'success'}} border-opacity-50 shadow-sm mb-1 ">
+                                    <div class="col-md-6">
+                                        <div class="card card-proceso border-{{($proceso->descargar == 1)? 'warning' : 'success'}} border-opacity-50 shadow-sm mb-1">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                                     <div>
@@ -564,8 +585,13 @@
                                                             <span style="font-size: 11px">{{ $proceso->cliente->descrip }}</span>
                                                         </h6>
                                                         <small class="text-muted">
-                                                            <i class="bi bi-building me-1"></i>
-                                                            {{ $proceso->sucursalcli->descrip }}
+                                                            @if($proceso->es_grupo)
+                                                                <i class="bi bi-diagram-3 me-1"></i>
+                                                                {{ $proceso->cantidad_sucursales }} sucursales
+                                                            @else
+                                                                <i class="bi bi-building me-1"></i>
+                                                                {{ $proceso->sucursalcli->descrip ?? 'N/A' }}
+                                                            @endif
                                                         </small>
                                                     </div>
                                                     <div class="badge bg-{{($proceso->descargar == 1)? 'warning' : 'success'}}">
@@ -578,19 +604,29 @@
                                                 </div>
                                                 <div class="mt-2 pt-2 border-top">
                                                     <div class="d-flex justify-content-between">
-                                                        <span class="text-muted">Monto
-                                                            @if($proceso->TipoCxc == 99)
-                                                                Pago
-                                                            @else
-                                                                Desc
-                                                            @endif:
+                                                        <span class="text-muted">Monto:</span>
+                                                        <span class="fw-bold text-primary">
+                                                            ${{ number_format($proceso->monto_total_grupo ?? $proceso->montodolares, 2, ',', '.') }}
                                                         </span>
-                                                        <span class="fw-bold text-primary">${{ number_format($proceso->montodolares, 2, ',', '.') }}</span>
                                                     </div>
                                                     <div class="d-flex justify-content-between mt-1">
                                                         <span class="text-muted">Fecha:</span>
                                                         <span>{{ $proceso->formattedDate }}</span>
                                                     </div>
+                                                    @if($proceso->es_grupo)
+                                                        <div class="mt-2 d-flex justify-content-between">
+                                                            <div style="text-align: left" class="small text-muted">
+                                                                {{$proceso->Document}}
+                                                            </div>
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-primary btn-ver-grupo"
+                                                                    data-codclie="{{ $proceso->cliente->codclie }}"
+                                                                    data-fecha="{{ \Carbon\Carbon::parse($proceso->created_at)->format('Y-m-d H:i:s') }}"
+                                                                    data-cliente="{{ $proceso->cliente->descrip ?? '' }}">
+                                                                <i class="bi bi-eye"></i> Ver distribución
+                                                            </button>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -671,11 +707,75 @@
             </div>
         </div>
     </div>
+
+    {{-- Modal para detalle del grupo --}}
+    <div class="modal fade" id="grupoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title text-white">
+                        <i class="bi bi-diagram-3 me-2"></i>Distribución del Pago
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="grupoDetalleContent">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                        <p class="mt-2 text-muted">Cargando detalle...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
     <script src="{{ URL::asset('build/js/app.js') }}"></script>
     <script>
+
+        $(document).on('click', '.btn-ver-grupo', function() {
+            const codclie = $(this).data('codclie');
+            const fecha   = $(this).data('fecha');
+            const cliente = $(this).data('cliente');
+
+            $('#grupoModal .modal-title').html(
+                `<i class="bi bi-diagram-3 me-2"></i>Distribución del Pago - ${cliente}`
+            );
+
+            $('#grupoDetalleContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2 text-muted">Cargando detalle...</p>
+        </div>
+    `);
+
+            $('#grupoModal').modal('show');
+
+            $.ajax({
+                url: '/cxc/detalle-grupo',
+                method: 'POST',
+                data: {
+                    codclie: codclie,
+                    fecha_grupo: fecha,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success) {
+                        $('#grupoDetalleContent').html(response.vista);
+                    } else {
+                        $('#grupoDetalleContent').html(
+                            `<div class="alert alert-danger">${response.message}</div>`
+                        );
+                    }
+                },
+                error: function() {
+                    $('#grupoDetalleContent').html(
+                        `<div class="alert alert-danger">Error al cargar el detalle</div>`
+                    );
+                }
+            });
+        });
+
         // Función para resaltar texto
         function highlightText(text, searchTerm) {
             if (!searchTerm || searchTerm.length < 2) return text;

@@ -668,6 +668,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"  onclick="capture('#tablaExistenciasModal')">
+                        <i class="bi bi-camera"></i> Capturar
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-1"></i>CERRAR
                     </button>
@@ -774,18 +777,24 @@
             abrirmodalexistencias(codalte, busqued);
         });
 
-        // Búsqueda en tiempo real dentro del modal
         $('#busquedaentredepositos').off('keyup').on('keyup', function() {
-            busqued = $(this).val();
-            $('#contentviewprodcodalte').html(`
-                <div class="text-center py-5">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Cargando...</span>
-                    </div>
-                    <p class="mt-3 text-muted">Buscando: ${busqued}</p>
+            var busqueda = $(this).val();
+
+            // Llamar a la función de recarga del modal
+            if (typeof recargarModalConBusqueda === 'function') {
+                recargarModalConBusqueda(busqueda);
+            } else {
+                // Fallback
+                $('#contentviewprodcodalte').html(`
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
                 </div>
-            `);
-            abrirmodalexistencias(codalte, busqued);
+                <p class="mt-3 text-muted">Buscando: ${busqueda}</p>
+            </div>
+        `);
+                abrirmodalexistencias(modalCodalte, busqueda);
+            }
         });
 
         function abrirmodalexistencias(codalte, busqueda) {
