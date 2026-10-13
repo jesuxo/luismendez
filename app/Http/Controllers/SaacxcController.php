@@ -390,7 +390,7 @@ class SaacxcController extends Controller
                     $record->fill($aux) ;
                     $record->fk_sucursal = $cxc->fk_sucursal;
                     $record->save();
-                    $aux2 =  ['fk_sucursal' => $cxc->fk_sucursal, 'numerod' => $cxc->NumeroD, 'NroUnico' => $cxc->NroUnico, 'Saldo' => $cxc->Saldo];
+                    $aux2 =  ['id'=>$record->id, 'fk_sucursal' => $cxc->fk_sucursal, 'numerod' => $cxc->NumeroD, 'NroUnico' => $cxc->NroUnico, 'Saldo' => $cxc->Saldo];
                     array_push($arraycxc, $aux2);
                 }
             }
