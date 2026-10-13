@@ -538,7 +538,9 @@
                 <tr>
                     <th width="5%" class="text-center">CÓD</th>
                     <th width="22%">PRODUCTO</th>
-                    <th width="8%" class="text-center">REF</th>
+                    <th width="8%" class="text-center">CostPro</th>
+                    <th width="8%" class="text-center">Costo</th>
+                    <th width="8%" class="text-center">Precio3</th>
                     @foreach($depositoValues as $indexDep => $descripdepo)
                         <th width="12%" class="text-center">
                                 <span class="deposito-tooltip" title="{{ $descripdepo }}">
@@ -568,6 +570,9 @@
                     <tr bgcolor="{{ $bgcolor }}" style="color:#2c3e50;">
                         <td align="left" class="codigo-prod-modal">{{ $index }}</td>
                         <td align="left" class="nombre-prod-modal">{{ $producto['descrip'] ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ $producto['preciodpro'] ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ $producto['preciod'] ?? '' }}</td>
+                        <td align="left" class="nombre-prod-modal">{{ $producto['costod3'] ?? '' }}</td>
                         <td align="left" class="descrip2-prod-modal">
                             {{ $producto['descrip2'] ?? '-' }}
                         </td>
@@ -605,7 +610,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ count($depositoValues) + 3 }}" align="center" style="padding: 30px 0;">
+                        <td colspan="{{ count($depositoValues) + 6 }}" align="center" style="padding: 30px 0;">
                             <i class="bi bi-inbox" style="font-size: 36px; color: #ccc;"></i>
                             <h6 style="color: #6c757d; margin-top: 8px;">No hay productos con existencias</h6>
                             <p style="color: #999; font-size: 0.8rem;">No se encontraron productos en esta categoría</p>
@@ -616,7 +621,7 @@
                 @if(count($productos) > 0)
                     <!-- FILA DE TOTALES -->
                     <tr class="fila-total" bgcolor="#0072c5">
-                        <td colspan="3" align="right">
+                        <td colspan="5" align="right">
                             <strong>TOTALES</strong>
                         </td>
                         @foreach($arraycantdep as $totalDep)
