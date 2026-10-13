@@ -420,21 +420,22 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold">Tipo de Transferencia <span class="text-danger">*</span></label>
-                                            @if(Auth::user() and auth()->user()->can('menu_transferencias_aprobar'))
-                                                <select class="form-control" name="tipo" id="tipo" required>
-                                                    <option value="">Seleccione un tipo</option>
-                                                    <option value="venta" data-color="success" selected>💰 Venta / Cobranza</option>
-                                                    <option value="pago" data-color="info">💸 Pago General</option>
-                                                    <option value="ahorro" data-color="warning">🏦 Ahorro</option>
-                                                    <option value="proveedor" data-color="primary">📦 Pago a Proveedor</option>
-                                                    <option value="gasto" data-color="danger">🧾 Gasto</option>
-                                                    <option value="otro" data-color="secondary">📌 Otro</option>
-                                                </select>
-                                            @else
-                                                <select class="form-control" name="tipo" id="tipo" required>
-                                                    <option value="venta" data-color="success" selected>💰 Venta / Cobranza</option>
-                                                </select>
-                                            @endif
+                                        @if(Auth::user() and auth()->user()->can('menu_transferencias_gastos'))
+                                            <select class="form-control" name="tipo" id="tipo" required>
+                                                <option value="">Seleccione un tipo</option>
+                                                <option value="venta" data-color="success" selected>💰 Venta / Cobranza</option>
+                                                <option value="efectivo" data-color="success" >💰 Cambio Efectivo</option>
+                                                <option value="pago" data-color="info">💸 Pago General</option>
+                                                <option value="ahorro" data-color="warning">🏦 Ahorro</option>
+                                                <option value="proveedor" data-color="primary">📦 Pago a Proveedor</option>
+                                                <option value="gasto" data-color="danger">🧾 Gasto</option>
+                                                <option value="otro" data-color="secondary">📌 Otro</option>
+                                            </select>
+                                        @else
+                                            <select class="form-control" name="tipo" id="tipo" required>
+                                                <option value="venta" data-color="success" selected>💰 Venta / Cobranza</option>
+                                            </select>
+                                        @endif
                                         <div class="invalid-feedback">
                                             Debe seleccionar un tipo de transferencia
                                         </div>

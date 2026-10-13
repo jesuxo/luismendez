@@ -318,7 +318,7 @@ class CwtransferenciasController extends Controller
     public function list(Request $request)
     {
         $sucursalid     = str_replace("300","",$request->sucursal);
-        $transferencias = Cwtransferencia::where(["fksucursal" => $sucursalid, "status"=>1, "tipo"=>"venta", "descargada" => 0])->limit('30')->get();
+        $transferencias = Cwtransferencia::whereIn('tipo',['venta','efectivo'])->where(["fksucursal" => $sucursalid, "status"=>1, "descargada" => 0])->limit('30')->get();
 
         return response()->json(['success'=>'success', 'newtransfer' => $transferencias]);
     }
@@ -417,6 +417,9 @@ class CwtransferenciasController extends Controller
     public function reportetransferencias(Request $request)
     {
         $arraysucursales = auth()->user()->getSucursalesIdsComercialActual();
+       /* if(!isset($arraysucursales) or count($arraysucursales) < 1){}
+            return response()->redirectTo('/');*/
+
         $arraysucursales = implode(",",$arraysucursales);
 
         $comercialid = session('comercialid');
@@ -599,6 +602,7 @@ class CwtransferenciasController extends Controller
         // Agrupar por tipo
         $porTipo = [
             'venta'     => [],
+            'efectivo'  => [],
             'pago'      => [],
             'ahorro'    => [],
             'proveedor' => [],
@@ -1102,7 +1106,7 @@ class CwtransferenciasController extends Controller
             'bancosucursal' => 'required|exists:cwbancos,id',
             'fksucursal'    => 'required|exists:sasucursal,id',
             'imagen'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // Aumentado a 10MB
-            'tipo'          => 'required|in:venta,pago,ahorro,proveedor,gasto,otro',
+            'tipo'          => 'required|in:venta,efectivo,pago,ahorro,proveedor,gasto,otro',
             'categoria'     => 'nullable|string|max:100',
             'referencia'    => 'nullable|string|max:100',
             'proveedor_id'  => 'nullable|integer',

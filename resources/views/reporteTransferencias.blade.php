@@ -475,6 +475,7 @@
                             <select class="form-select" name="tipo" id="tipo">
                                 <option value="">Todos</option>
                                 <option value="venta" {{ (isset($tipo) && $tipo == 'venta') ? 'selected' : '' }}>Venta</option>
+                                <option value="efectivo" {{ (isset($tipo) && $tipo == 'efectivo') ? 'selected' : '' }}>Efectivo</option>
                                 <option value="pago" {{ (isset($tipo) && $tipo == 'pago') ? 'selected' : '' }}>Pago</option>
                                 <option value="ahorro" {{ (isset($tipo) && $tipo == 'ahorro') ? 'selected' : '' }}>Ahorro</option>
                                 <option value="proveedor" {{ (isset($tipo) && $tipo == 'proveedor') ? 'selected' : '' }}>Proveedor</option>
@@ -617,7 +618,7 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush">
-                        @foreach(['venta' => '💰 Ventas', 'pago' => '💸 Pagos', 'ahorro' => '🏦 Ahorros',
+                        @foreach(['venta' => '💰 Ventas', 'efectivo' => '💰 Cambio Efectivo', 'pago' => '💸 Pagos', 'ahorro' => '🏦 Ahorros',
                                  'proveedor' => '📦 Proveedores', 'gasto' => '🧾 Gastos', 'otro' => '📌 Otros'] as $key => $label)
                             @php $cantidad = count($porTipo[$key] ?? []); @endphp
                             @if($cantidad > 0)
@@ -703,6 +704,7 @@
     </div>
 
     @include('partials.modal-eliminar')
+
     @include('partials.modal-pendiente')
 
     <div class="modal fade" id="imagenModal" tabindex="-1">
@@ -917,6 +919,24 @@
             $.ajax({
                 type: 'POST',
                 url: '/transferencias/pendienteAgain',
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                data: { id: id },
+                success: function(data) {
+                    if (data.error == 1) {
+                        window.location.href = '/reporte/transferencias';
+                    }
+                }
+            });
+        });
+
+        $('#descargarrecord').off('click').on('click', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            $('#cargandodesc').html('<button class="btn btn-outline-primary btn-load"><span class="spinner-border"></span></button>');
+
+            $.ajax({
+                type: 'POST',
+                url: '/transferencias/DescargarAgain',
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                 data: { id: id },
                 success: function(data) {
