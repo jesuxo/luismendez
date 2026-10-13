@@ -323,7 +323,7 @@ class SaacxcController extends Controller
         $sucursalid       = str_replace("300","",$request->sucursal);
         $cuentasporcobrar = $request->cuentasporcobrar;
         $cuentasporcobrar = json_decode($cuentasporcobrar);
-
+        $arraycxc         = [];
         if(isset($cuentasporcobrar)){
             foreach ($cuentasporcobrar as $cxc){
 
@@ -390,11 +390,13 @@ class SaacxcController extends Controller
                     $record->fill($aux) ;
                     $record->fk_sucursal = $cxc->fk_sucursal;
                     $record->save();
+                    $aux2 =  ['fk_sucursal' => $cxc->fk_sucursal, 'numerod' => $cxc->NumeroD, 'NroUnico' => $cxc->NroUnico, 'Saldo' => $cxc->Saldo];
+                    array_push($arraycxc, $aux2);
                 }
             }
         }
 
-        return response()->json(['success' => 'success', 'updated' => 1], 200);
+        return response()->json(['success' => 'success', 'updated' => 1, 'arraycxc' => $arraycxc], 200);
     }
     /**
      * Obtener instrumentos de pago para el modal
