@@ -138,25 +138,6 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label" for="preciodpro">Costo</label>
-                                    <input type="number" step="0.01" class="form-control" id="preciodpro" name="preciodpro"
-                                           placeholder="Costo del producto" value="{{ old('preciodpro') }}">
-                                </div>
-                            </div>
-
-                            <div class="col-lg-6">
-                                <div class="mb-3">
-                                    <label class="form-label" for="costod3">Precio de venta</label>
-                                    <input type="number" step="0.01" class="form-control" id="costod3" name="costod3"
-                                           placeholder="Precio de venta" value="{{ old('costod3') }}">
-                                </div>
-                            </div>
-                        </div>
-
-
                     </div>
                 </div>
 
