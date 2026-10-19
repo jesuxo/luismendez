@@ -231,7 +231,7 @@ class SainstaController extends Controller
             ->orderBy('id', 'desc')
             ->first();
 
-        $last = isset($product) and $product->codprod != '' ? $product->codprod : '';
+        $last = (isset($product) and $product->codprod != '') ? $product->codprod : '';
 
         return response()->json(['last' => $last]);
     }

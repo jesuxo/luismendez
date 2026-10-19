@@ -616,7 +616,7 @@
                 @endforelse
 
                 @if(count($productos) > 0)
-                    <!-- FILA DE TOTALES -->
+
                     <tr class="fila-total" bgcolor="#0072c5">
                         <td colspan="5" align="right">
                             <strong>TOTALES</strong>
